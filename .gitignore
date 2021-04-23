@@ -10,3 +10,4 @@ input/*
 environ/*
 misc
 static/*
+!static/.placeholder
