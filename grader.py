@@ -340,7 +340,10 @@ def project_load(project_name):
 			os.mkdir(path)
 		file.save(os.path.join(path, 'uploaded.zip'))
 		with zipfile.ZipFile(os.path.join(path, 'uploaded.zip'), 'r') as zipf:
-			zipf.extractall(path)
+			content = zipf.namelist()
+			for i in content:
+				if i.split('.')[-1] == 'zip':
+					zipf.extract(i, path)
 
 		subs = os.listdir(path)
 		processed = {}
