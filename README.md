@@ -1,13 +1,13 @@
 ## 컴퓨터의 개념 및 실습 (2021-1) grading system
 
-## Requirements
+### Requirements
 
-### Python libraries
+#### Python libraries
 
 * flask ```pip install flask```
 * argon2-cffi ```pip install argon2-cffi```
 
-### HTML/JS
+#### HTML/JS
 
 * Put all libraries into ```/static``` directory.
 
