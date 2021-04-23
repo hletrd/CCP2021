@@ -51,10 +51,14 @@ def get_all_list():
 	c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
 	metadata = c.fetchone()
 	project = json.loads(metadata[2])
+	if 'auth' not in session:
+		project = list(filter(lambda x: x['public'], project))
 	project = list(map(lambda x: x['name'], project))
 	c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
 	metadata = c.fetchone()
 	hw = json.loads(metadata[2])
+	if 'auth' not in session:
+		hw = list(filter(lambda x: x['public'], hw))
 	hw = list(map(lambda x: x['name'], hw))
 
 	return hw + project
@@ -66,16 +70,14 @@ def prepare_data():
 	c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
 	metadata = c.fetchone()
 	project = json.loads(metadata[2])
-	project = list(map(lambda x: x['name'], project))
 	c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
 	metadata = c.fetchone()
 	hw = json.loads(metadata[2])
-	hw = list(map(lambda x: x['name'], hw))
 
 	password = getconfig('password')
 	pw_notset = password == None
 	
-	return {'project_nums': project, 'hw_nums': hw, 'version': sys.version_info, 'fversion': __version__, 'auth': 'auth' in session, 'rand': random.random(), 'pw_notset': pw_notset}
+	return {'project': project, 'hw': hw, 'version': sys.version_info, 'fversion': __version__, 'auth': 'auth' in session, 'rand': random.random(), 'pw_notset': pw_notset}
 
 def student_init():
 	return {
@@ -485,12 +487,9 @@ def manage():
 def manage_save(reqtype):
 	if not 'auth' in session:
 		abort(404)
-	conn = sqlite3.connect(dbfile)
-	c = conn.cursor()
 	data = []
 	for k, i in request.json.items():
-		data.append({'id': i['id'], 'name': i['name']})
-	data = json.dumps(data)
+		data.append({'id': i['id'], 'name': i['name'], 'public': i['public']})
 
 	reqtype_table = {
 		'0': 'hw',
@@ -498,7 +497,6 @@ def manage_save(reqtype):
 	}
 
 	setconfig(reqtype_table[reqtype], data)
-	conn.commit()
 	
 	return 'ok'
 

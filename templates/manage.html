@@ -7,6 +7,7 @@ HW 관리
 		<tr>
 			<th class="col-sm-1" scope="col">#</th>
 			<th scope="col">제목</th>
+			<th scope="col">공개여부</th>
 			<th class="col-sm-1" scope="col">삭제</th>
 		</tr>
 	</thead>
@@ -15,6 +16,12 @@ HW 관리
 		<tr data-id="{{i['id']}}">
 			<th>{{i['id']}}</th>
 			<td><input class="form-control" type="text" value="{{i['name']}}"></td>
+			<td>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="check-public-0-{{i['id']}}"{%if i['public']%} checked{%endif%}>
+					<label class="form-check-label" for="check-public-0-{{i['id']}}">공개</label>
+				</div>
+			</td>
 			<td><button onclick="remove_item(0, this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button></td>
 		</tr>
 		{%endfor%}
@@ -29,6 +36,7 @@ Project 관리
 		<tr>
 			<th class="col-sm-1" scope="col">#</th>
 			<th scope="col">제목</th>
+			<th scope="col">공개여부</th>
 			<th class="col-sm-1" scope="col">삭제</th>
 		</tr>
 	</thead>
@@ -37,6 +45,12 @@ Project 관리
 		<tr data-id="{{i['id']}}">
 			<th>{{i['id']}}</th>
 			<td><input class="form-control" type="text" value="{{i['name']}}"></td>
+			<td>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="check-public-1-{{i['id']}}"{%if i['public']%} checked{%endif%}>
+					<label class="form-check-label" for="check-public-1-{{i['id']}}">공개</label>
+				</div>
+			</td>
 			<td><button onclick="remove_item(1, this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button></td>
 		</tr>
 		{%endfor%}
@@ -53,6 +67,19 @@ function add(type) {
 	var tr = $('<tr>');
 	$('<th>').html(count[type]).appendTo(tr);
 	$('<td>').html('<input class="form-control" type="text" val="">').appendTo(tr);
+	var td = $('<td>');
+	var div = $('<div>').addClass('form-check');
+	$('<input>', {
+		class: 'form-check-input',
+		type: 'checkbox',
+		id: 'check-public-'+type+'-'+count,
+	}).appendTo(div);
+	$('<label>', {
+		class: 'form-check-label',
+		for: 'check-public-'+type+'-'+count,
+	}).text('공개').appendTo(div);
+	div.appendTo(td);
+	td.appendTo(tr);
 	$('<td>').html('<button onclick="remove_item('+type+',this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button>').appendTo(tr);
 	tr.data('id', count[type]);
 	tr.appendTo($('#tbody'+type));
@@ -75,6 +102,7 @@ function save(type) {
 		data[i] = {
 			id: i,
 			name: $($(trs[i]).find('input')[0]).val(),
+			public: $($(trs[i]).find('input')[1]).prop('checked'),
 		}
 	}
 	$.ajax({
