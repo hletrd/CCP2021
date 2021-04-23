@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>CCP project grader</title>
+	<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+	<style>
+		.spacer-15 {
+			height: 15px;
+		}
+		body {
+			font-family: 'Noto Sans KR', sans-serif;
+		}
+	</style>
+	<script src="/static/jquery/jquery-3.6.0.min.js"></script>
+	<script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="/static/remixicon/remixicon.css">
+	<!--<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">-->
+	<!--
+		VMO Lab
+		Virtual Machine & Optimization Lab
+		https://altair.snu.ac.kr/apply/
+	-->
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<div class="container">
+			<a class="navbar-brand" href="/">CCP grading system</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav_col">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="nav_col">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" id="navbardropdown0" role="button" data-toggle="dropdown" data-bs-toggle="dropdown" aria-expanded="false"><i class="ri-list-check"></i> HW</span></a>
+						<ul class="dropdown-menu" aria-labelledby="navbardropdown0">
+							{%for i in data.data.hw_nums%} 
+							<li><a class="dropdown-item" href="/project/{{i}}">{{i}}</a></li>
+							{%endfor%}
+						</ul>
+					</li>
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" id="navbardropdown1" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="ri-list-check"></i> Project</span></a>
+						<ul class="dropdown-menu" aria-labelledby="navbardropdown1">
+							{%for i in data.data.project_nums%} 
+							<li><a class="dropdown-item" href="/project/{{i}}">{{i}}</a></li>
+							{%endfor%}
+						</ul>
+					</li>
+					<li class="nav-item"><a class="nav-link" href="/details"><i class="ri-information-line"></i> 채점 결과 설명</a></li>
+					{%if data.data.auth == True%}
+					<li class="nav-item"><a class="nav-link" href="/manage"><i class="ri-file-list-2-line"></i> 목록 관리</a></li>
+					<li class="nav-item"><a class="nav-link" href="/settings"><i class="ri-settings-line"></i> 환경설정</a></li>
+					<li class="nav-item"><a class="nav-link" href="/logout"><i class="ri-logout-box-line"></i> 로그아웃</a></li>
+					{%else%}
+					<li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalmodal"><i class="ri-login-box-line"></i> 관리자</a></li>
+					{%endif%}
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<form method="post" action="/auth">
+		<div id="modalmodal" class="modal" tabindex="-1">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+					<h5 class="modal-title">CCP grading system</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-sm-4"><label>비밀번호</label></div>
+							<div class="col-sm-8"><input class="form-control" placeholder="{%if data.data.pw_notset%}초기 비밀번호는 ccp2021입니다.{%else%}비밀번호{%endif%}" name="password" type="password"></div>
+						</div>
+					</div>
+					<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">인증</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+	<div class="container content">
+		<div class="spacer-15"></div>

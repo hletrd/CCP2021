@@ -1,0 +1,32 @@
+{%include '_header.html'%}
+<a href="/project/{{data.project_name}}" class="btn btn-secondary"><i class="ri-arrow-go-back-line"></i> Back to results</a> 
+<table class="table table-sm">
+	<thead>
+		<tr>
+			<th class="col-sm-1" scope="col">Case #</th>
+			<th scope="col">입력</th>
+			<th scope="col">정답</th>
+			<th class="col-sm-1" scope="col">배점</th>
+			<th scope="col">채점기준</th>
+		</tr>
+	</thead>
+	<tbody id="tbody">
+		{%for i in data.val_set%}
+		<tr data-id="{{i[0]}}">
+			<th>{{i[0]}}</th>
+			<td><input class="form-control" type="text" value="{{i[1]}}"></td>
+			<td><input class="form-control" type="text" value="{{i[2]}}"></td>
+			<td>{{i[3].score}}</td>
+			<td>
+				<div class="">
+					<label>{%if i[3].val_mode.check_num %}<i class="ri-check-line"></i>{%else%}<i class="ri-close-line"></i>{%endif%} 숫자 채점</label>
+				</div>
+				<div class="">
+					<label>{%if i[3].val_mode.check_char %}<i class="ri-check-line"></i>{%else%}<i class="ri-close-line"></i>{%endif%} 문자 채점</label>
+				</div>
+			</td>
+		</tr>
+		{%endfor%}
+	</tbody>
+</table>
+{%include '_footer.html'%}

@@ -1,0 +1,106 @@
+{%include '_header.html'%}
+{%include "project_common.html"%}
+<a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-phone-find-line"></i> 채점 데이터 보기</a>
+<br />
+<div class="spacer-15"></div>
+<label>Score mean: {{data.score_avg|round(2)}} / {{data.score_max|round(2)}}, stdev: {{data.score_std|round(2)}}</label>
+{%include "chart.html"%}
+<div class="row">
+<div class="col-md-6">
+<table class="table table-sm table-responsive">
+	<thead>
+		<tr>
+			<th scope="col">#</th>
+			<th scope="col">학번</th>
+			<th scope="col">이름</th>
+			<th scope="col">파일명 형식</th>
+			<th scope="col">점수</th>
+			<th scope="col">자세히</th>
+		</tr>
+	</thead>
+	<tbody>
+		{%for i in data.projects%}
+		<tr>
+			<th>{{i[0]}}</th>
+			<td>{{i[1]}}</td>
+			<td>{{i[2]}}</td>
+			<td>
+				{% if i[4].log_zip == 'Unzip succeed' %}
+				문제없음
+				{% else %}
+				파일명 잘못됨
+				{% endif %}
+			</td>
+			<td>{{i[4].val.score}}</td>
+			<td><button onclick="view_detail(this)" data-id="{{i[0]}}" type="button" class="btn btn-sm btn-info"><i class="ri-more-fill"></i></button></td>
+		</tr>
+		{%endfor%}
+	</tbody>
+</table>
+</div>
+<div class="col-md-6">
+	<div class="spacer-15"></div>
+	<div id="scroll-target"></div>
+	<div class="card">
+		<div class="card-body">
+			<h5 class="card-title">Results</h5>
+			<hr>
+			<p class="card-text" id="score-result">
+			</p>
+		</div>
+	</div>
+	<div class="spacer-15"></div>
+	<div class="accordion" id="accordion">
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingOne">
+				<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse" aria-expanded="true" aria-controls="collapse">
+					Detailed results...
+				</button>
+			</h2>
+			<div id="collapse" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordion">
+				<div class="accordion-body" id="run-result">
+				</div>
+			</div>
+		</div>
+	</div>
+	{%if data.sample != ''%}
+	<!--<div class="spacer-15"></div>
+	<h6>Sample code, for reference only</h6>
+	<pre><div id="code-preview">{{data.sample}}</div></pre>-->
+	{%endif%}
+</div>
+</div>
+<script>
+var id_selected = -1;
+
+{%if data.sample != ''%}
+var editor = ace.edit("code-preview");
+$(document).ready(function(){
+	editor.setTheme("ace/theme/monokai");
+	editor.session.setMode("ace/mode/python");
+	editor.session.setUseWrapMode(true);
+	editor.setAutoScrollEditorIntoView(true);
+	editor.setOption('maxLines', 100);
+	editor.setOption('minLines', 5);
+	editor.renderer.setScrollMargin(10, 0, 0, 10);
+});
+{%endif%}
+
+function view_detail(target) {
+	setTimeout(function(){
+		$('#scroll-target').get(0).scrollIntoView();
+	}, 200);
+	$.get('/project/result/{{data.project_name}}/' + $(target).data('id'), function(data){
+		var resultbox = $('#run-result');
+		var scorebox = $('#score-result');
+		scorebox.html('');
+		resultbox.html('');
+		$('<h6>Student: '+data.student_name+' ('+data.student_id+'), Last run on '+data.last+'</h6>').appendTo(scorebox);
+		$('<h6>Total score: '+data.score+' / '+data.score_total+'</h6>').appendTo(scorebox);
+		for(var i = 0; i < data.details.length; i++) {
+			render(data);
+		}
+	});
+};
+</script>
+{%include '_footer.html'%}

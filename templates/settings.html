@@ -1,0 +1,79 @@
+{%include '_header.html'%}
+{{content}}
+<style>
+.jumbotron {
+	padding: 5rem 0rem 5rem 0rem;
+	margin-bottom: 2rem;
+	border-radius: .3rem;
+	text-align: center;
+}
+</style>
+<div>
+	<form class="jumbotron" method="post" action="/settings" enctype="multipart/form-data">
+		<div class="row justify-content-sm-center">
+			<div class="col-sm-6">
+				<div class="col-sm-4"><h5>채점 설정</h5></div>
+				<hr>
+				<div class="row">
+					<div class="col-sm-4"><label>최대 허용 오차</label></div>
+					<div class="col-sm-8"><input class="form-control" name="max_error" type="number" value="{{data.max_error}}" step="any"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"><label>소수점 형식 오류 감점 (%)</label></div>
+					<div class="col-sm-8"><input class="form-control" name="deduce_decimal" type="number" value="{{data.deduce_decimal}}" step="any"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"><label>오답 감점 (%)</label></div>
+					<div class="col-sm-8"><input class="form-control" name="deduce_wrong" type="number" value="{{data.deduce_wrong}}" step="any"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"><label>TLE 감점 (%)</label></div>
+					<div class="col-sm-8"><input class="form-control" name="deduce_tle" type="number" value="{{data.deduce_tle}}" step="any"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"><label>런타임 오류 감점 (%)</label></div>
+					<div class="col-sm-8"><input class="form-control" name="deduce_runtime" type="number" value="{{data.deduce_runtime}}" step="any"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"><label>실행 제한 시간 (초)</label></div>
+					<div class="col-sm-8"><input class="form-control" name="time_limit" type="number" value="{{data.time_limit}}" step="any"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"></div>
+					<div class="col-sm-8 d-grid"><button type="submit" class="btn btn-primary">설정 저장</button></div>
+				</div>
+			</div>
+		</div>
+	</form>
+	<hr>
+	<form class="jumbotron" method="post" action="/settings/password" enctype="multipart/form-data">
+		<div class="row justify-content-sm-center">
+			<div class="col-sm-6">
+				<div class="col-sm-4"><h5>로그인 설정</h5></div>
+				<hr>
+				<div class="row">
+					<div class="col-sm-4"><label>새 관리자 비밀번호</label></div>
+					<div class="col-sm-8"><input class="form-control" name="password" type="password"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"><label>새 관리자 비밀번호 확인</label></div>
+					<div class="col-sm-8"><input class="form-control" name="password-re" type="password"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"></div>
+					<div class="col-sm-8 d-grid"><button type="submit" class="btn btn-secondary">비밀번호 변경</button></div>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+
+{%include '_footer.html'%}

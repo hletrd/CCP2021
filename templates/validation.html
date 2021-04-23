@@ -1,0 +1,144 @@
+{%include '_header.html'%}
+<a href="/project/{{data.project_name}}" class="btn btn-secondary"><i class="ri-arrow-go-back-line"></i> Back to list</a> 
+<table class="table table-sm">
+	<thead>
+		<tr>
+			<th class="col-sm-1" scope="col">Case #</th>
+			<th scope="col">입력</th>
+			<th scope="col">정답</th>
+			<th class="col-sm-1" scope="col">배점</th>
+			<th scope="col">채점기준</th>
+			<th class="col-sm-1" scope="col">삭제</th>
+		</tr>
+	</thead>
+	<tbody id="tbody">
+		{%for i in data.val_set%}
+		<tr data-id="{{i[0]}}">
+			<th>{{i[0]}}</th>
+			<td><input class="form-control" type="text" value="{{i[1]}}"></td>
+			<td><input class="form-control" type="text" value="{{i[2]}}"></td>
+			<td><input class="form-control" type="number" value="{{i[3].score}}"></td>
+			<td>
+				<div class="form-check form-switch">
+					<input class="form-check-input" type="checkbox" id="check-num-{{i[0]}}"{%if i[3].val_mode.check_num %} checked{%endif%}>
+					<label class="form-check-label" for="check-num-{{i[0]}}">숫자 채점</label>
+				</div>
+				<div class="form-check form-switch">
+					<input class="form-check-input" type="checkbox" id="check-char-{{i[0]}}"{%if i[3].val_mode.check_char %} checked{%endif%}>
+					<label class="form-check-label" for="check-char-{{i[0]}}">문자 채점</label>
+				</div>
+			</td>
+			<td><button onclick="remove_item(this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button></td>
+		</tr>
+		{%endfor%}
+	</tbody>
+</table>
+<button onclick="add()" type="button" class="btn btn-primary"><i class="ri-add-box-line"></i> Add</button> <button onclick="save()" type="button" class="btn btn-success"><i class="ri-save-line"></i> Save</button>
+<hr>
+<h5>Type in a code to generate answer(s)</h5>
+<div class="card">
+<div class="card-body">
+	<h5 class="card-title">Results</h5>
+	<hr>
+	<p class="card-text" id="run-result"></p>
+</div>
+</div>
+<div class="spacer-15"></div>
+<textarea class="form-control" rows="20" id="code-editor">
+</textarea>
+<div class="spacer-15"></div>
+<button type="button" class="btn btn-info" onclick="answer()"><i class="ri-mark-pen-fill"></i> Generate answers</button>
+<script>
+var count = {{data.val_set | length}};
+function add() {
+	var tr = $('<tr>');
+	$('<th>').html(count).appendTo(tr);
+	$('<td>').html('<input class="form-control" type="text" val="">').appendTo(tr);
+	$('<td>').html('<input class="form-control" type="text" val="">').appendTo(tr);
+	$('<td>').html('<input class="form-control" type="number" val="10">').appendTo(tr);
+	var td = $('<td>');
+	var div;
+	div = $('<div>').addClass('form-check form-switch');
+	$('<input>', {
+		class: 'form-check-input',
+		type: 'checkbox',
+		id: 'check-num-'+count,
+		checked: true
+	}).appendTo(div);
+	$('<label>', {
+		class: 'form-check-label',
+		for: 'check-num-'+count,
+	}).text('숫자 채점').appendTo(div);
+	div.appendTo(td);
+
+	div = $('<div>').addClass('form-check form-switch');
+	$('<input>', {
+		class: 'form-check-input',
+		type: 'checkbox',
+		id: 'check-char-'+count,
+		checked: true
+	}).appendTo(div);
+	$('<label>', {
+		class: 'form-check-label',
+		for: 'check-char-'+count,
+	}).text('문자 채점').appendTo(div);
+	div.appendTo(td);
+	td.appendTo(tr);
+	$('<td>').html('<button onclick="remove_item(this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button>').appendTo(tr);
+	tr.data('id', count);
+	tr.appendTo('#tbody');
+	count++;
+}
+function remove_item(target) {
+	var target_id = $(target).parent().parent().data('id');
+	$('tbody>tr')[target_id].remove();
+	var trs = $('#tbody tr');
+	for(var i = 0; i < trs.length; i++) {
+		$(trs[i]).find('th').html(i);
+		$(trs[i]).data('id', i);
+	}
+	count--;
+}
+function save() {
+	var trs = $('#tbody tr');
+	var data = {};
+	for(var i = 0; i < trs.length; i++) {
+		data[i] = {
+			id: i,
+			input: $($(trs[i]).find('input')[0]).val(),
+			output: $($(trs[i]).find('input')[1]).val(),
+			score: $($(trs[i]).find('input')[2]).val(),
+			val_mode: {
+				'check_num': $($(trs[i]).find('input')[3]).prop('checked'),
+				'check_char': $($(trs[i]).find('input')[4]).prop('checked'),
+			},
+		}
+	}
+	$.ajax({
+		type: 'POST',
+		url: '/project/data/save/{{data.project_name}}',
+		data: JSON.stringify(data),
+		dataType: 'json',
+		contentType: 'application/json',
+	});
+}
+function answer() {
+	$.post('/project/run/{{data.project_name}}', {
+		'code': $('#code-editor').val(),
+		'id': -1
+	}, function(data){
+		var resultbox = $('#run-result');
+		resultbox.html('');
+		var trs = $('#tbody tr');
+		for(var i = 0; i < data.details.length; i++) {
+			if (data.details[i].result != 0) {
+				$('<p>').text('Case #'+i+' Error...'+data.details[i].error).appendTo(resultbox);
+			} else {
+				$('<p>').text('Case #'+i+' Complete').appendTo(resultbox);
+				$($(trs[i]).find('input')[1]).val(data.details[i].output.replaceAll('\n', '\\n'));
+			}
+		}
+	});
+}
+</script>
+{%include '_footer.html'%}

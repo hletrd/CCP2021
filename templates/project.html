@@ -1,0 +1,232 @@
+{%include '_header.html'%}
+{%include "project_common.html"%}
+<style>
+	.btn-logout {
+		background-color: #fd7e14;
+		border-color: #fd7e14;
+	}
+	.btn-logout:hover {
+		background-color: #ca6510;
+		border-color: #ca6510;
+	}
+</style>
+<a href="/project/upload/{{data.project_name}}" class="btn btn-outline-success"><i class="ri-file-upload-line"></i> Upload new submissions</a> <a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-edit-box-line"></i> Manage validation sets</a> <a href="/project/download/{{data.project_name}}?{{data.data.rand}}" class="btn btn-primary"><i class="ri-file-download-line"></i> Download results as .csv</a>
+<div class="spacer-15"></div>
+<label>Score mean: {{data.score_avg|round(2)}} / {{data.score_max|round(2)}}, stdev: {{data.score_std|round(2)}}</label>
+{%include "chart.html"%}
+<div class="row">
+<div class="col-md-6">
+<a href="#" data-bs-toggle="modal" data-bs-target="#modal-add" class="btn btn-outline-primary"><i class="ri-user-add-line"></i> 학생 직접 추가</a>
+<form method="post" action="/project/add_student/{{data.project_name}}">
+	<div id="modal-add" class="modal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+				<h5 class="modal-title">학생 직접 추가</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-sm-4"><label>학번</label></div>
+						<div class="col-sm-8"><input class="form-control" name="student-id" type="text"></div>
+					</div>
+					<div class="spacer-15"></div>
+					<div class="row">
+						<div class="col-sm-4"><label>이름</label></div>
+						<div class="col-sm-8"><input class="form-control" name="student-name" type="text"></div>
+					</div>
+					<div class="spacer-15"></div>
+					<ul>
+						<li>파일명 형식은 무조건 맞는 것으로 처리됩니다.</li>
+						<li>코드는 추후 우측의 코드 에디터에서 따로 입력해야 합니다.</li>
+					</ul>
+				</div>
+				<div class="modal-footer">
+				<button type="submit" class="btn btn-primary">추가</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+<div id="modal-confirm" class="modal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+			<h5 class="modal-title">학생 삭제</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<label id="student-name-display"></label> 학생을 삭제하시겠습니까?
+			</div>
+			<div class="modal-footer">
+			<button type="button" data-bs-dismiss="modal" class="btn btn-secondary">취소</button>
+			<button id="btn-remove-confirm" type="button" data-id="" onclick="remove(this)" class="btn btn-danger">삭제</button>
+			</div>
+		</div>
+	</div>
+</div>
+<table class="table table-sm table-responsive">
+	<thead>
+		<tr>
+			<th scope="col">#</th>
+			<th scope="col">학번</th>
+			<th scope="col">이름</th>
+			<th scope="col">파일명 형식</th>
+			<th scope="col">점수</th>
+			<th scope="col">자세히</th>
+			<th scope="col">삭제</th>
+		</tr>
+	</thead>
+	<tbody>
+		{%for i in data.projects%}
+		<tr>
+			<th>{{i[0]}}</th>
+			<td>{{i[1]}}</td>
+			<td>{{i[2]}}</td>
+			<td>{{i[4].log_zip}}
+				{%if i[3] != 1%}
+				/ File(s): 
+				{{i[4].log_zip_detail|join(', ')}}
+				{%endif%}
+			</td>
+			<td>{{i[4].val.score}}</td>
+			<td><button onclick="view_detail(this)" data-id="{{i[0]}}" type="button" class="btn btn-sm btn-info"><i class="ri-more-fill"></i></button></td>
+			<td><button onclick="remove_confirm(this)" data-name="{{i[2]}}" data-id="{{i[0]}}" type="button" class="btn btn-sm btn-danger"><i class="ri-delete-bin-line"></i></button></td>
+		</tr>
+		{%endfor%}
+	</tbody>
+</table>
+</div>
+<div class="col-md-6">
+	<button type="button" class="btn btn-success" id="btn-run" onclick="run()"><i class="ri-play-fill"></i> Run &amp; Validate</button> <button type="button" class="btn btn-warning" id="btn-runall" onclick="runall({%if data.projects[0]%}{{data.projects[0][0]}}{%else%}0{%endif%})"><i class="ri-task-line"></i> Run &amp; Validate All</button> <label id="status"></label><!--<button type="button" class="btn btn-info"><i class="ri-save-fill"></i> Save changes</button>-->
+	<div class="spacer-15"></div>
+	<button type="button" class="btn btn-info" id="btn-save" onclick="save()" ><i class="ri-save-fill"></i> 코드 저장</button>
+	<div class="spacer-15"></div>
+	<div id="scroll-target"></div>
+	<div class="card">
+		<div class="card-body">
+			<h5 class="card-title">Results</h5>
+			<hr>
+			<p class="card-text" id="score-result">
+			</p>
+		</div>
+	</div>
+	<div class="spacer-15"></div>
+	<div class="accordion" id="accordion">
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingOne">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse" aria-expanded="true" aria-controls="collapse">
+					Detailed results...
+				</button>
+			</h2>
+			<div id="collapse" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion">
+				<div class="accordion-body" id="run-result">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="spacer-15"></div>
+	<pre><div id="code-preview">print("Hello, world!") #the code appears here.</div></pre>
+</div>
+</div>
+<script>
+var id_selected = -1;
+var editor = ace.edit("code-preview");
+$(document).ready(function(){
+	editor.setTheme("ace/theme/monokai");
+	editor.session.setMode("ace/mode/python");
+	editor.session.setUseWrapMode(true);
+	editor.setAutoScrollEditorIntoView(true);
+	editor.setOption('maxLines', 100);
+	editor.setOption('minLines', 5);
+	editor.renderer.setScrollMargin(10, 0, 0, 10);
+});
+
+function view_detail(target) {
+	setTimeout(function(){
+		$('#scroll-target').get(0).scrollIntoView();
+	}, 200);
+	$.get('/project/view/{{data.project_name}}/' + $(target).data('id')).done(function(data){
+		editor.setValue(data);
+		editor.resize();
+		id_selected = $(target).data('id');
+	});
+	$.get('/project/result/{{data.project_name}}/' + $(target).data('id'), function(data){
+		render(data);
+	});
+};
+function run() {
+	$.post('/project/run/{{data.project_name}}', {
+		'code': $('#code-preview').text(),
+		'id': id_selected
+	}, function(data){
+		render(data);
+	});
+}
+function runall(num) {
+	if (num <= {%if data.projects[0]%}{{data.projects[-1][0]}}{%else%}0{%endif%}) {
+		$('#btn-run').prop('disabled', true);
+		$('#btn-runall').prop('disabled', true);
+		$('#status').html('<div class="spinner-border spinner-border-sm m-1" role="status"></div>Batch validation running...' + num + '/' +{%if data.projects[0]%}{{data.projects[-1][0]}}{%else%}0{%endif%})
+		$.post('/project/run/{{data.project_name}}', {
+					'code': '',
+					'id': num
+		}).done(function() {
+			setTimeout(function(){
+				runall(num+1)
+			}, 500);
+		}).fail(function() {
+			var tooltip = new bootstrap.Tooltip($('#btn-runall')[0], {
+				title: 'Failed',
+				placement: 'right',
+				trigger: 'manual'
+			});
+			tooltip.show();
+		});
+	} else {
+		$('#status').html('');
+		$('#btn-run').prop('disabled', false);
+		$('#btn-runall').prop('disabled', false);
+	}
+}
+function save() {
+	$.post('/project/save/{{data.project_name}}/'+id_selected, {
+		'code': editor.getValue()
+	}).done(function() {
+		var tooltip = new bootstrap.Tooltip($('#btn-save')[0], {
+			title: 'Saved!',
+			placement: 'right',
+			trigger: 'manual'
+		});
+		tooltip.show();
+		setTimeout(function(){
+			tooltip.dispose();
+		}, 1000);
+	}).fail(function() {
+		var tooltip = new bootstrap.Tooltip($('#btn-save')[0], {
+			title: 'Failed',
+			placement: 'right',
+			trigger: 'manual'
+		});
+		tooltip.show();
+		setTimeout(function(){
+			tooltip.dispose();
+		}, 1000);
+	});
+}
+function remove_confirm(target) {
+	$('#btn-remove-confirm').data('id', $(target).data('id'));
+	$('#student-name-display').text($(target).data('name'))
+	var modal = new bootstrap.Modal($('#modal-confirm')[0]);
+	modal.show();
+}
+function remove(target) {
+	var target_id = $(target).data('id');
+	$.post('/project/remove_student/{{data.project_name}}/'+target_id).done(function() {
+		location.reload();
+	}).fail(function() {
+
+	});
+}
+</script>
+{%include '_footer.html'%}

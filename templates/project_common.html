@@ -1,0 +1,214 @@
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+	.error {
+		color: #dc3545;
+		font-weight: 700;
+	}
+	.tle {
+		color: #dc3545;
+		font-weight: 700;
+	}
+	.wrong-answer {
+		color: #d63384;
+		font-weight: 700;
+	}
+	.score-zero {
+		color: #dc3545;
+		font-weight: 500;
+	}
+	.wrong-format {
+		color: #fd7e14;
+		font-weight: 600;
+	}
+	.message-wrong-format {
+		color: #fd7e14;
+		font-weight: 700;
+	}
+	.message-wrong-answer {
+		color: #d63384;
+		font-weight: 700;
+	}
+	.bg-wrong-answer {
+		background-color: #d63384;
+	}
+	.bg-wrong-format {
+		background-color: #fd7e14;
+	}
+	.message-error {
+		color: #dc3545;
+		font-weight: 700;
+	}
+	.correct {
+		color: #0d6efd;
+		font-weight: 700;
+	}
+	.score-full {
+		color: #0d6efd;
+		font-weight: 500;
+	}
+	.answer {
+		color: #198754;
+		font-weight: 700;
+	}
+	.input {
+		color: #0dcaf0;
+		font-weight: 700;
+	}
+	.number {
+		color: #6610f2;
+		font-weight: 500;
+	}
+	.score-partial {
+		color: #6f42c1;
+		font-weight: 500;
+	}
+	#chart {
+		width: 100%;
+		height: 300px;
+	}
+	#code-preview {
+		font-size: 1.0em;
+	}
+	.result-detailed {
+		padding-left: .4rem;
+		padding-top: .1rem;
+		padding-bottom: .6rem;
+		padding-right: .4rem;
+		margin-top: 10px;
+		font-size: 0.85em;
+		background-color: #fafafa;
+		border: 1px solid rgba(0,0,0,.125);
+		border-radius: .25rem;
+		font-weight: 500;
+		font-family: 'Roboto Mono', monospace;
+		word-wrap: break-word;
+		white-space: pre-wrap;
+		line-height: 1.05;
+	}
+	.result-detailed .badge {
+		margin-bottom: 0.15rem;
+		margin-top: 0.4rem;
+		line-height: 1.1;
+		font-size: 0.8em;
+	}
+	.result-each {
+		margin-bottom: .15rem;
+	}
+</style>
+<script src="/static/ace/ace.js"></script>
+<script src="/static/amcharts/core.js"></script>
+<script src="/static/amcharts/charts.js"></script>
+<script src="/static/amcharts/themes/animated.js"></script>
+<script>
+function render(data) {
+	var resultbox = $('#run-result');
+	var scorebox = $('#score-result');
+	scorebox.html('');
+	resultbox.html('');
+
+	$('<h6>Student: '+data.student_name+' ('+data.student_id+'), Last run on '+data.last+'</h6>').appendTo(scorebox);
+	$('<h6>Total score: '+data.score+' / '+data.score_total+'</h6>').appendTo(scorebox);
+	for(var i = 0; i < data.details.length; i++) {
+		var result = $('<p>').addClass('result-each');
+		result.append('Case <span class="number">#'+i+'</span>: ');
+		var output = data.details[i].output;
+		var answer = data.details[i].answer;
+		var input = data.details[i].input;
+		if (data.details[i].correct == 1) {
+			$('<span>').addClass('correct').html('Correct! ').appendTo(result);
+			$('<span>').addClass('score-full').html('Score '+data.details[i].score).appendTo(result);
+		} else if (data.details[i].correct == 2 || data.details[i].correct == 6) {
+			$('<span>').addClass('message-wrong-format').html('Wrong format! ').appendTo(result);
+			$('<span>').addClass('score-partial').html('Score '+data.details[i].score).appendTo(result);
+			
+			var result_detailed = $('<p>').addClass('result-detailed');
+			result_detailed.append($('<span>').addClass('badge bg-wrong-format').html('Your output'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('wrong-format').html(output))
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('badge bg-success').html('Correct output'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('answer').html(answer));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('input').html(input))	
+			result_detailed.appendTo(result);
+		} else if (data.details[i].correct == 3) {
+			$('<span>').addClass('tle').html('Time limit exceed! ').appendTo(result);
+			$('<span>').addClass('score-zero').html('Score '+data.details[i].score).appendTo(result);
+
+			var result_detailed = $('<p>').addClass('result-detailed');
+			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('input').html(input))	
+			result_detailed.appendTo(result);
+		} else if (data.details[i].correct == 5) {
+			$('<span>').addClass('message-wrong-format').html('Wrong decimal format! ').appendTo(result);
+			$('<span>').addClass('score-partial').html('Score '+data.details[i].score).appendTo(result);
+
+			var result_detailed = $('<p>').addClass('result-detailed');
+			result_detailed.append($('<span>').addClass('badge bg-wrong-format').html('Your output'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('wrong-format').html(output))
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('badge bg-success').html('Correct output'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('answer').html(answer));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('input').html(input))	
+			result_detailed.appendTo(result);
+		} else if (data.details[i].correct == 6) {
+			$('<span>').addClass('message-wrong-format').html('Excess outputs! ').appendTo(result);
+			$('<span>').addClass('score-partial').html('Score '+data.details[i].score).appendTo(result);
+
+			var result_detailed = $('<p>').addClass('result-detailed');
+			result_detailed.append($('<span>').addClass('badge bg-wrong-format').html('Your output'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('wrong-format').html(output))
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('badge bg-success').html('Correct output'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('answer').html(answer));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('input').html(input))	
+			result_detailed.appendTo(result);
+		} else if (data.details[i].result != 0) {
+			$('<span>').addClass('message-error').html('Runtime error! ').appendTo(result);
+			$('<span>').addClass('score-zero').html('Score '+data.details[i].score).appendTo(result);
+
+			var result_detailed = $('<p>').addClass('result-detailed');
+			result_detailed.append($('<span>').addClass('badge bg-danger').html('Error'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('error').html(data.details[i].error))
+			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('input').html(input))	
+			result_detailed.appendTo(result);
+		} else {
+			$('<span>').addClass('message-wrong-answer').html('Wrong answer! ').appendTo(result);
+			$('<span>').addClass('score-zero').html('Score '+data.details[i].score).appendTo(result);
+
+			var result_detailed = $('<p>').addClass('result-detailed');
+			result_detailed.append($('<span>').addClass('badge bg-wrong-answer').html('Your output'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('wrong-answer').html(output))
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('badge bg-success').html('Correct output'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('answer').html(answer));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('input').html(input))	
+			result_detailed.appendTo(result);
+		}
+		result.appendTo(resultbox);
+	}
+}
+</script>

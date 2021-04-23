@@ -1,0 +1,93 @@
+{%include '_header.html'%}
+<div class="row">
+<div class="col-md-6">
+HW 관리
+<table class="table table-sm">
+	<thead>
+		<tr>
+			<th class="col-sm-1" scope="col">#</th>
+			<th scope="col">제목</th>
+			<th class="col-sm-1" scope="col">삭제</th>
+		</tr>
+	</thead>
+	<tbody id="tbody0">
+		{%for i in data.hw%}
+		<tr data-id="{{i['id']}}">
+			<th>{{i['id']}}</th>
+			<td><input class="form-control" type="text" value="{{i['name']}}"></td>
+			<td><button onclick="remove_item(0, this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button></td>
+		</tr>
+		{%endfor%}
+	</tbody>
+</table>
+<button onclick="add(0)" type="button" class="btn btn-primary"><i class="ri-add-box-line"></i> Add</button> <button onclick="save(0)" type="button" class="btn btn-success"><i class="ri-save-line"></i> Save</button>
+</div>
+<div class="col-md-6">
+Project 관리
+<table class="table table-sm">
+	<thead>
+		<tr>
+			<th class="col-sm-1" scope="col">#</th>
+			<th scope="col">제목</th>
+			<th class="col-sm-1" scope="col">삭제</th>
+		</tr>
+	</thead>
+	<tbody id="tbody1">
+		{%for i in data.project%}
+		<tr data-id="{{i['id']}}">
+			<th>{{i['id']}}</th>
+			<td><input class="form-control" type="text" value="{{i['name']}}"></td>
+			<td><button onclick="remove_item(1, this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button></td>
+		</tr>
+		{%endfor%}
+	</tbody>
+</table>
+<button onclick="add(1)" type="button" class="btn btn-primary"><i class="ri-add-box-line"></i> Add</button> <button onclick="save(1)" type="button" class="btn btn-success"><i class="ri-save-line"></i> Save</button>
+</div>
+</div>
+<div class="spacer-15"></div>
+<label>같은 이름의 HW/Project가 하나라도 있으면 오류가 발생합니다. 이름이 중복되지 않도록 주의해주세요.</label>
+<script>
+var count = [{{data.hw | length}}, {{data.project | length}}];
+function add(type) {
+	var tr = $('<tr>');
+	$('<th>').html(count[type]).appendTo(tr);
+	$('<td>').html('<input class="form-control" type="text" val="">').appendTo(tr);
+	$('<td>').html('<button onclick="remove_item('+type+',this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button>').appendTo(tr);
+	tr.data('id', count[type]);
+	tr.appendTo($('#tbody'+type));
+	count[type]++;
+}
+function remove_item(type, target) {
+	var target_id = $(target).parent().parent().data('id');
+	$('#tbody'+type).find('tr')[target_id].remove();
+	var trs = $('#tbody'+type).find('tr');
+	for(var i = 0; i < trs.length; i++) {
+		$(trs[i]).find('th').html(i);
+		$(trs[i]).data('id', i);
+	}
+	count[type]--;
+}
+function save(type) {
+	var trs = $('#tbody'+type+' tr');
+	var data = {};
+	for(var i = 0; i < trs.length; i++) {
+		data[i] = {
+			id: i,
+			name: $($(trs[i]).find('input')[0]).val(),
+		}
+	}
+	$.ajax({
+		type: 'POST',
+		url: '/manage/save/'+type,
+		data: JSON.stringify(data),
+		dataType: 'json',
+		contentType: 'application/json',
+	}).done(function() {
+		location.reload();
+	}).fail(function() {
+		location.reload();
+	});
+}
+</script>
+{%include '_footer.html'%}

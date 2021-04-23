@@ -1,0 +1,12 @@
+ccp.db
+access.log
+
+bin
+lib
+pyvenv.cfg
+__pycache__
+
+input/*
+environ/*
+misc
+static
