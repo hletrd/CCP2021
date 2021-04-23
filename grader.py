@@ -597,14 +597,15 @@ def run_code(project_name):
 	if project_name in get_all_list():
 		conn = sqlite3.connect(dbfile)
 		c = conn.cursor()
-		code = request.form.get('code')
+		
 		code_id = request.form.get('id')
 
-		student_name = '학생'
+		student_name = 'sample'
 		student_id = '2021-00000'
 
 		if code_id == '-1':
 			data_student = {}
+			code = request.form.get('code')
 		else:
 			c.execute('SELECT * FROM {} WHERE `id`=?;'.format(project_name), (code_id,))
 

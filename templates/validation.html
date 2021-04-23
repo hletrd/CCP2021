@@ -44,12 +44,22 @@
 </div>
 </div>
 <div class="spacer-15"></div>
-<textarea class="form-control" rows="20" id="code-editor">
-</textarea>
+<div id="code-editor"></div>
 <div class="spacer-15"></div>
 <button type="button" class="btn btn-info" onclick="answer()"><i class="ri-mark-pen-fill"></i> Generate answers</button>
+<script src="/static/ace/ace.js"></script>
 <script>
 var count = {{data.val_set | length}};
+var editor = ace.edit("code-editor");
+$(document).ready(function(){
+	editor.setTheme("ace/theme/monokai");
+	editor.session.setMode("ace/mode/python");
+	editor.session.setUseWrapMode(true);
+	editor.setAutoScrollEditorIntoView(true);
+	editor.setOption('maxLines', 100);
+	editor.setOption('minLines', 20);
+	editor.renderer.setScrollMargin(10, 0, 0, 10);
+});
 function add() {
 	var tr = $('<tr>');
 	$('<th>').html(count).appendTo(tr);
@@ -124,7 +134,7 @@ function save() {
 }
 function answer() {
 	$.post('/project/run/{{data.project_name}}', {
-		'code': $('#code-editor').val(),
+		'code': editor.getValue(),
 		'id': -1
 	}, function(data){
 		var resultbox = $('#run-result');
