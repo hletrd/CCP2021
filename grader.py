@@ -63,6 +63,22 @@ def get_all_list():
 
 	return hw + project
 
+def get_all_list_dict():
+	conn = sqlite3.connect(dbfile)
+	c = conn.cursor()
+	c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
+	metadata = c.fetchone()
+	project = json.loads(metadata[2])
+	if 'auth' not in session:
+		project = filter(lambda x: x['public'], project)
+	c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
+	metadata = c.fetchone()
+	hw = json.loads(metadata[2])
+	if 'auth' not in session:
+		hw = filter(lambda x: x['public'], hw)
+	result = dict([(i['name'], i) for i in project]+[(i['name'], i) for i in hw])
+	return result
+
 def prepare_data():
 	init_db()
 	conn = sqlite3.connect(dbfile)
@@ -225,6 +241,7 @@ def project(project_name):
 				sample = f.read()
 
 		if not 'auth' in session:
+			pjhw = get_all_list_dict()
 			numbers = list(map(lambda x: x[1][-3:], projects))
 			for i in projects:
 				if numbers.count(i[1][-3:]) > 1:
@@ -232,7 +249,7 @@ def project(project_name):
 				else:
 					i[2] = '***'
 				i[1] = '****-**'+i[1][-3:]
-			return render_template('project_public.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample})
+			return render_template('project_public.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample, 'data_public': pjhw[project_name]['data_public']})
 		return render_template('project.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample})
 	else:
 		abort(404)
@@ -440,6 +457,9 @@ def project_load(project_name):
 def project_data(project_name):
 	if project_name in get_all_list():
 		if not 'auth' in session:
+			pjhw = get_all_list_dict()
+			if pjhw[project_name]['data_public'] == False:
+				abort(404)
 			conn = sqlite3.connect(dbfile)
 			c = conn.cursor()
 			c.execute('SELECT * FROM `{}_val`;'.format(project_name))
@@ -492,7 +512,7 @@ def manage_save(reqtype):
 		abort(404)
 	data = []
 	for k, i in request.json.items():
-		data.append({'id': i['id'], 'name': i['name'], 'public': i['public']})
+		data.append({'id': i['id'], 'name': i['name'], 'public': i['public'], 'data_public': i['data_public']})
 
 	reqtype_table = {
 		'0': 'hw',
@@ -786,8 +806,8 @@ def validator(input_val='', output_val='', check_num=True, check_char=True, max_
 								correct = 0 #wrong answer
 			elif check_num == False and check_char == True:
 				#remove all numbers
-				out = re.sub(r'[0-9.\-]', r' ', outs)
-				ref = re.sub(r'[0-9.\-]', r' ', output_val)
+				out = re.sub(r'-?[0-9.]', r' ', outs)
+				ref = re.sub(r'-?[0-9.]', r' ', output_val)
 				#remove excessive whitespaces
 				out = re.sub(r'\s+', ' ', out).strip().lower()
 				ref = re.sub(r'\s+', ' ', ref).strip().lower()

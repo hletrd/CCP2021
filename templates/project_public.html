@@ -1,8 +1,10 @@
 {%include '_header.html'%}
 {%include "project_common.html"%}
+{%if data.data_public %}
 <a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-phone-find-line"></i> 채점 데이터 보기</a>
 <br />
 <div class="spacer-15"></div>
+{%endif%}
 <label>Score mean: {{data.score_avg|round(2)}} / {{data.score_max|round(2)}}, stdev: {{data.score_std|round(2)}}</label>
 {%include "chart.html"%}
 <div class="row">

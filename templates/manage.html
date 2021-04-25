@@ -19,7 +19,11 @@ HW 관리
 			<td>
 				<div class="form-check">
 					<input class="form-check-input" type="checkbox" id="check-public-0-{{i['id']}}"{%if i['public']%} checked{%endif%}>
-					<label class="form-check-label" for="check-public-0-{{i['id']}}">공개</label>
+					<label class="form-check-label" for="check-public-0-{{i['id']}}">결과 공개</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="check-data-0-{{i['id']}}"{%if i['data_public']%} checked{%endif%}>
+					<label class="form-check-label" for="check-data-0-{{i['id']}}">채점 데이터 공개</label>
 				</div>
 			</td>
 			<td><button onclick="remove_item(0, this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button></td>
@@ -48,7 +52,11 @@ Project 관리
 			<td>
 				<div class="form-check">
 					<input class="form-check-input" type="checkbox" id="check-public-1-{{i['id']}}"{%if i['public']%} checked{%endif%}>
-					<label class="form-check-label" for="check-public-1-{{i['id']}}">공개</label>
+					<label class="form-check-label" for="check-public-1-{{i['id']}}">결과 공개</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="check-data-1-{{i['id']}}"{%if i['data_public']%} checked{%endif%}>
+					<label class="form-check-label" for="check-data-1-{{i['id']}}">채점 데이터 공개</label>
 				</div>
 			</td>
 			<td><button onclick="remove_item(1, this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button></td>
@@ -68,7 +76,8 @@ function add(type) {
 	$('<th>').html(count[type]).appendTo(tr);
 	$('<td>').html('<input class="form-control" type="text" val="">').appendTo(tr);
 	var td = $('<td>');
-	var div = $('<div>').addClass('form-check');
+	var div;
+	div = $('<div>').addClass('form-check');
 	$('<input>', {
 		class: 'form-check-input',
 		type: 'checkbox',
@@ -77,7 +86,18 @@ function add(type) {
 	$('<label>', {
 		class: 'form-check-label',
 		for: 'check-public-'+type+'-'+count,
-	}).text('공개').appendTo(div);
+	}).text('결과 공개').appendTo(div);
+	div.appendTo(td);
+	div = $('<div>').addClass('form-check');
+	$('<input>', {
+		class: 'form-check-input',
+		type: 'checkbox',
+		id: 'check-data-'+type+'-'+count,
+	}).appendTo(div);
+	$('<label>', {
+		class: 'form-check-label',
+		for: 'check-data-'+type+'-'+count,
+	}).text('채점 데이터 공개').appendTo(div);
 	div.appendTo(td);
 	td.appendTo(tr);
 	$('<td>').html('<button onclick="remove_item('+type+',this)" type="button" class="btn btn-danger"><i class="ri-close-fill"></i></button>').appendTo(tr);
@@ -103,6 +123,7 @@ function save(type) {
 			id: i,
 			name: $($(trs[i]).find('input')[0]).val(),
 			public: $($(trs[i]).find('input')[1]).prop('checked'),
+			data_public: $($(trs[i]).find('input')[2]).prop('checked'),
 		}
 	}
 	$.ajax({
