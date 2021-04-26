@@ -43,10 +43,51 @@
 					<div class="col-sm-4"><label>실행 제한 시간 (초)</label></div>
 					<div class="col-sm-8"><input class="form-control" name="time_limit" type="number" value="{{data.time_limit}}" step="any"></div>
 				</div>
+				<hr>
+				<div class="row">
+					<div class="col-sm-4"><label>실행 명령어</label></div>
+					<div class="col-sm-8"><input class="form-control" name="script" type="text" value="{{data.script}}"></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"><label>실행 파일명</label></div>
+					<div class="col-sm-8"><input class="form-control" name="run_filename" type="text" value="{{data.run_filename}}"></div>
+				</div>
 				<div class="spacer-15"></div>
 				<div class="row">
 					<div class="col-sm-4"></div>
 					<div class="col-sm-8 d-grid"><button type="submit" class="btn btn-primary">설정 저장</button></div>
+				</div>
+			</div>
+		</div>
+	</form>
+	<hr>
+	<form class="jumbotron" method="post" action="/settings/admin" enctype="multipart/form-data">
+		<div class="row justify-content-sm-center">
+			<div class="col-sm-6">
+				<div class="col-sm-4"><h5>관리자 화면 설정</h5></div>
+				<hr>
+				<div class="row">
+					<div class="col-sm-4"><label class="form-check-label" for="check-public-id">학번 보이기</label></div>
+					<div class="col-sm-8">
+						<div class="form-check form-switch">
+							<input class="form-check-input" type="checkbox" id="check-public-id" name="check-public-id"{%if data.admin_public_id%} checked{%endif%}>
+						</div>
+					</div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"><label class="form-check-label" for="check-public-name">이름 보이기</label></div>
+					<div class="col-sm-8">
+						<div class="form-check form-switch">
+							<input class="form-check-input" type="checkbox" name="check-public-name" id="check-public-name"{%if data.admin_public_name%} checked{%endif%}>
+						</div>
+					</div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"></div>
+					<div class="col-sm-8 d-grid"><button type="submit" class="btn btn-success">설정 저장</button></div>
 				</div>
 			</div>
 		</div>

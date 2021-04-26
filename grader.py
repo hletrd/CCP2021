@@ -116,18 +116,16 @@ def index():
 
 @app.route('/details')
 def detail():
-	deduce_decimal = getconfig('deduce_decimal')
-	if deduce_decimal == None:
-		deduce_decimal = 0
+	deduce_decimal = getconfig('deduce_decimal', 0.1)
 	return render_template('details.html', data={'data': prepare_data(), 'deduce_decimal': deduce_decimal*100})
 
-def getconfig(typetext):
+def getconfig(typetext, default=None):
 	conn = sqlite3.connect(dbfile)
 	c = conn.cursor()
 	c.execute('SELECT * FROM `metadata` WHERE `type`=?;', (typetext,))
 	result = c.fetchone()
 	if result == None:
-		return None
+		return default
 	else:
 		return json.loads(result[2])
 
@@ -156,36 +154,45 @@ def settings():
 		setconfig('deduce_runtime', float(request.form.get('deduce_runtime', 0))/100)
 		
 		setconfig('time_limit', float(request.form.get('time_limit', 0)))
-
+		setconfig('script', request.form.get('script'))
+		setconfig('run_filename', request.form.get('run_filename'))
+		
 	data = prepare_data()
-	deduce_decimal = getconfig('deduce_decimal')
-	deduce_wrong = getconfig('deduce_wrong')
-	deduce_tle = getconfig('deduce_tle')
-	deduce_runtime = getconfig('deduce_runtime')
+	deduce_decimal = getconfig('deduce_decimal', 0.1)
+	deduce_wrong = getconfig('deduce_wrong', 1.0)
+	deduce_tle = getconfig('deduce_tle', 1.0)
+	deduce_runtime = getconfig('deduce_runtime', 1.0)
 
-	if deduce_decimal == None:
-		deduce_decimal = 0.1
-	if deduce_wrong == None:
-		deduce_wrong = 1
-	if deduce_tle == None:
-		deduce_tle = 1
-	if deduce_runtime == None:
-		deduce_runtime = 1
+	admin_public_id = getconfig('admin_public_id')
+	admin_public_name = getconfig('admin_public_name')
+
+	script = getconfig('script', 'python3')
+	run_filename = getconfig('run_filename', 'main.py')
 	
 	deduce_decimal *= 100 #to percentage
 	deduce_wrong *= 100 #to percentage
 	deduce_tle *= 100 #to percentage
 	deduce_runtime *= 100 #to percentage
 
-	max_error = getconfig('max_error')
-	if max_error == None:
-		max_error = 0.001
-	time_limit = getconfig('time_limit')
-	if time_limit == None:
-		time_limit = 1.0
+	max_error = getconfig('max_error', 0.001)
+	time_limit = getconfig('time_limit', 1.0)
 
-	data_form = {'data': data, 'deduce_decimal': deduce_decimal, 'deduce_wrong': deduce_wrong, 'deduce_tle': deduce_tle, 'deduce_runtime': deduce_runtime, 'max_error': max_error, 'time_limit': time_limit}
+	data_form = {'data': data, 'deduce_decimal': deduce_decimal, 'deduce_wrong': deduce_wrong, 'deduce_tle': deduce_tle, 'deduce_runtime': deduce_runtime, 'max_error': max_error, 'time_limit': time_limit, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name, 'script': script, 'run_filename': run_filename}
 	return render_template('settings.html', data=data_form)
+
+@app.route('/settings/admin', methods=['POST'])
+def settings_admin():
+	if not 'auth' in session:
+		abort(404)
+	if request.form.get('check-public-id') != None:
+		setconfig('admin_public_id', True)
+	else:
+		setconfig('admin_public_id', False)
+	if request.form.get('check-public-name') != None:
+		setconfig('admin_public_name', True)
+	else:
+		setconfig('admin_public_name', False)
+	return redirect('/settings')
 
 @app.route('/settings/password', methods=['POST'])
 def settings_password():
@@ -246,6 +253,8 @@ def project(project_name):
 		if os.path.exists(sample_path):
 			with open(sample_path, 'r') as f:
 				sample = f.read()
+		admin_public_id = getconfig('admin_public_id')
+		admin_public_name = getconfig('admin_public_name')
 
 		if not 'auth' in session:
 			pjhw = get_all_list_dict()
@@ -257,7 +266,7 @@ def project(project_name):
 					i[2] = '***'
 				i[1] = '****-**'+i[1][-3:]
 			return render_template('project_public.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample, 'data_public': pjhw[project_name]['data_public']})
-		return render_template('project.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample})
+		return render_template('project.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name})
 	else:
 		abort(404)
 
@@ -509,12 +518,8 @@ def manage():
 	if not 'auth' in session:
 		abort(404)
 	init_db()
-	project = getconfig('project')
-	hw = getconfig('hw')
-	if project == None:
-		project = []
-	if hw == None:
-		hw = []
+	project = getconfig('project', [])
+	hw = getconfig('hw', [])
 	return render_template('manage.html', data={'data': prepare_data(), 'project': project, 'hw': hw})
 
 @app.route('/manage/save/<string:reqtype>', methods=['POST'])
@@ -658,7 +663,7 @@ def run_code(project_name):
 			'student_id': student_id
 		}
 
-		with open(os.path.join(run_path, 'main.py'), 'w') as f:
+		with open(os.path.join(run_path, getconfig('run_filename', 'main.py')), 'w') as f:
 			f.write(code)
 		
 		c.execute('SELECT * FROM `{}_val`;'.format(project_name))
@@ -702,6 +707,9 @@ def run_code(project_name):
 		data_student['val']['last'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		data_json = json.dumps(data_student)
+
+		os.remove(os.path.join(run_path, getconfig('run_filename', 'main.py')))
+
 		if code_id != '-1':
 			c.execute('UPDATE {} SET `result`=?, `data`=? WHERE `id`=?;'.format(project_name), (4, data_json, code_id,))
 			conn.commit()
@@ -709,7 +717,7 @@ def run_code(project_name):
 	abort(404)
 
 def execute(input_val='', time_limit=1):
-	p = subprocess.Popen(['python3 main.py'], cwd=run_path, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+	p = subprocess.Popen([getconfig('script', 'python3')+' '+getconfig('run_filename', 'main.py')], cwd=run_path, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
 	input_lines = input_val.split('\n')
 
 	for i in input_lines:
