@@ -16,3 +16,9 @@
 * [Ace](https://ace.c9.io/)
 * [amCharts 4](https://www.amcharts.com/)
 * [jQuery](https://jquery.com/)
+
+#### Running
+
+```sh
+$ python3 grader.py
+```
