@@ -83,12 +83,16 @@ def prepare_data():
 	init_db()
 	conn = sqlite3.connect(dbfile)
 	c = conn.cursor()
-	c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
-	metadata = c.fetchone()
-	project = json.loads(metadata[2])
-	c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
-	metadata = c.fetchone()
-	hw = json.loads(metadata[2])
+	try:
+		c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
+		metadata = c.fetchone()
+		project = json.loads(metadata[2])
+		c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
+		metadata = c.fetchone()
+		hw = json.loads(metadata[2])
+	except:
+		project = []
+		hw = []
 
 	password = getconfig('password')
 	pw_notset = password == None
@@ -112,7 +116,10 @@ def index():
 
 @app.route('/details')
 def detail():
-	return render_template('details.html', data={'data': prepare_data(), 'deduce_decimal': getconfig('deduce_decimal')*100})
+	deduce_decimal = getconfig('deduce_decimal')
+	if deduce_decimal == None:
+		deduce_decimal = 0
+	return render_template('details.html', data={'data': prepare_data(), 'deduce_decimal': deduce_decimal*100})
 
 def getconfig(typetext):
 	conn = sqlite3.connect(dbfile)
@@ -504,6 +511,10 @@ def manage():
 	init_db()
 	project = getconfig('project')
 	hw = getconfig('hw')
+	if project == None:
+		project = []
+	if hw == None:
+		hw = []
 	return render_template('manage.html', data={'data': prepare_data(), 'project': project, 'hw': hw})
 
 @app.route('/manage/save/<string:reqtype>', methods=['POST'])
