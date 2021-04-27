@@ -259,6 +259,8 @@ def project(project_name):
 		if not 'auth' in session:
 			pjhw = get_all_list_dict()
 			numbers = list(map(lambda x: x[1][-3:], projects))
+			if not 'data_public' in pjhw[project_name]:
+				pjhw[project_name]['data_public'] = False
 			for i in projects:
 				if numbers.count(i[1][-3:]) > 1:
 					i[2] = i[2][0]+'**'
@@ -700,6 +702,7 @@ def run_code(project_name):
 			
 			data_student['val']['score_total'] += i[3]['score']
 			data_student['val']['details'].append(result)
+			time.sleep(0.2)
 
 		data_student['val']['score_total'] = round(data_student['val']['score_total'], 3)
 		data_student['val']['score'] = round(data_student['val']['score'], 3)
