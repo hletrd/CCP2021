@@ -86,7 +86,7 @@
 			<td>{{i[4].log_zip}}
 				{%if i[3] != 1%}
 				/ File(s): 
-				{{i[4].log_zip_detail|join(', ')}}
+				{{(i[4].log_zip_detail|join(', '))[:15]}}{%if i[4].log_zip_detail|join(', ')|length > 15%}...{%endif%}
 				{%endif%}
 			</td>
 			<td>{{i[4].val.score}}</td>

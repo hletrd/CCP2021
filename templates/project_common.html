@@ -208,6 +208,13 @@ function render(data) {
 			result_detailed.append($('<span>').addClass('input').html(input))	
 			result_detailed.appendTo(result);
 		}
+		if (data.details[i].details) {
+			var result_detailed = $('<p>').addClass('result-detailed');
+			result_detailed.append($('<span>').addClass('badge bg-success').html('Details'));
+			result_detailed.append('<br/>');
+			result_detailed.append($('<span>').addClass('answer').html(data.details[i].details));
+			result_detailed.appendTo(result);
+		}
 		result.appendTo(resultbox);
 	}
 }

@@ -163,8 +163,8 @@ def settings():
 	deduce_tle = getconfig('deduce_tle', 1.0)
 	deduce_runtime = getconfig('deduce_runtime', 1.0)
 
-	admin_public_id = getconfig('admin_public_id')
-	admin_public_name = getconfig('admin_public_name')
+	admin_public_id = getconfig('admin_public_id', True)
+	admin_public_name = getconfig('admin_public_name', True)
 
 	script = getconfig('script', 'python3')
 	run_filename = getconfig('run_filename', 'main.py')
@@ -221,7 +221,7 @@ def project(project_name):
 		except:
 			pass
 		try:
-			c.execute('CREATE TABLE `{}_val`(`id` INTEGER PRIMARY KEY AUTOINCREMENT, `INPUT` TEXT, `OUTPUT` TEXT, `data` TEXT);'.format(project_name))
+			c.execute('CREATE TABLE `{}_val`(`id` INTEGER PRIMARY KEY, `INPUT` TEXT, `OUTPUT` TEXT, `data` TEXT);'.format(project_name))
 		except:
 			pass
 		conn.commit()
@@ -502,7 +502,30 @@ def project_data(project_name):
 					'check_num': True,
 					'check_char': True
 				}
-		return render_template('validation.html', data={'data': prepare_data(), 'val_set': val_set, 'project_name': project_name})
+		metadata = getconfig('metadata_{}'.format(project_name), {})
+		if 'is_val_custom' not in metadata:
+			metadata['is_val_custom'] = False
+		if 'code_val_custom' not in metadata:
+			metadata['code_val_custom'] = ''
+		return render_template('validation.html', data={'data': prepare_data(), 'val_set': val_set, 'project_name': project_name, 'is_val_custom': metadata['is_val_custom'], 'code_val_custom': metadata['code_val_custom']})
+	else:
+		abort(404)
+
+@app.route('/project/validation/<string:project_name>', methods=['POST'])
+def validation_save(project_name):
+	if project_name in get_all_list():
+		if not 'auth' in session:
+			abort(403)
+		else:
+			metadata = getconfig('metadata_{}'.format(project_name), {})
+			if request.form.get('check-custom') == 'on':
+				metadata['is_val_custom'] = True
+				metadata['code_val_custom'] = request.form.get('code')
+			else:
+				metadata['is_val_custom'] = False
+			setconfig('metadata_{}'.format(project_name), metadata)
+				
+			return redirect('/project/data/{}'.format(project_name))
 	else:
 		abort(404)
 
@@ -629,6 +652,10 @@ def view_result(project_name, id):
 			pass
 		result = c.fetchone()
 		result = json.loads(result[4])['val']
+		if getconfig('admin_public_id', True) == False:
+			result['student_id'] = '****-**' + result['student_id'][-3:]
+		if getconfig('admin_public_name', True) == False:
+			result['student_name'] = '***'
 		return jsonify(result)
 
 @app.route('/project/run/<string:project_name>', methods=['POST'])
@@ -672,6 +699,14 @@ def run_code(project_name):
 		val_set = c.fetchall()
 		val_set = list(map(lambda x: list(x), val_set))
 
+		metadata = getconfig('metadata_{}'.format(project_name), {})
+		is_val_custom = False
+		if 'is_val_custom' in metadata and metadata['is_val_custom']:
+			code_validator = metadata['code_val_custom']
+			with open(os.path.join(run_path, 'validator.py'), 'w') as f:
+				f.write(code_validator)
+			is_val_custom = True
+
 		deduce_decimal = getconfig('deduce_decimal')
 		deduce_wrong = getconfig('deduce_wrong')
 		deduce_tle = getconfig('deduce_tle')
@@ -683,24 +718,28 @@ def run_code(project_name):
 		for i in val_set:
 			i[3] = json.loads(i[3])
 
-			result = validator(i[1], i[2], check_num=i[3]['val_mode']['check_num'], check_char=i[3]['val_mode']['check_char'], max_error=max_error, time_limit=time_limit)
-			if result['correct'] == 1:
-				data_student['val']['score'] += i[3]['score']
-				result['score'] = round(i[3]['score'], 3)
-			elif result['correct'] == 0:
-				data_student['val']['score'] += i[3]['score']*(1-deduce_wrong)
-				result['score'] = round(i[3]['score']*(1-deduce_wrong), 3)
-			elif result['correct'] == 3:
-				data_student['val']['score'] += i[3]['score']*(1-deduce_tle)
-				result['score'] = round(i[3]['score']*(1-deduce_tle), 3)
-			elif result['correct'] == 4:
-				data_student['val']['score'] += i[3]['score']*(1-deduce_runtime)
-				result['score'] = round(i[3]['score']*(1-deduce_runtime), 3)
-			elif result['correct'] == 5:
-				data_student['val']['score'] += i[3]['score']*(1-deduce_decimal)
-				result['score'] = round(i[3]['score']*(1-deduce_decimal), 3)
-			
-			data_student['val']['score_total'] += i[3]['score']
+			result = validator(i[1], i[2], check_num=i[3]['val_mode']['check_num'], check_char=i[3]['val_mode']['check_char'], max_error=max_error, time_limit=time_limit, is_val_custom=is_val_custom)
+			if is_val_custom: #custom score for custom validator
+				data_student['val']['score'] += result['score']
+				data_student['val']['score_total'] += result['score_full']
+			else:
+				if result['correct'] == 1:
+					data_student['val']['score'] += i[3]['score']
+					result['score'] = round(i[3]['score'], 3)
+				elif result['correct'] == 0:
+					data_student['val']['score'] += i[3]['score']*(1-deduce_wrong)
+					result['score'] = round(i[3]['score']*(1-deduce_wrong), 3)
+				elif result['correct'] == 3:
+					data_student['val']['score'] += i[3]['score']*(1-deduce_tle)
+					result['score'] = round(i[3]['score']*(1-deduce_tle), 3)
+				elif result['correct'] == 4:
+					data_student['val']['score'] += i[3]['score']*(1-deduce_runtime)
+					result['score'] = round(i[3]['score']*(1-deduce_runtime), 3)
+				elif result['correct'] == 5:
+					data_student['val']['score'] += i[3]['score']*(1-deduce_decimal)
+					result['score'] = round(i[3]['score']*(1-deduce_decimal), 3)
+				
+				data_student['val']['score_total'] += i[3]['score']
 			data_student['val']['details'].append(result)
 			time.sleep(0.2)
 
@@ -716,6 +755,10 @@ def run_code(project_name):
 		if code_id != '-1':
 			c.execute('UPDATE {} SET `result`=?, `data`=? WHERE `id`=?;'.format(project_name), (4, data_json, code_id,))
 			conn.commit()
+		if getconfig('admin_public_id', True) == False:
+			data_student['val']['student_id'] = '****-**' + data_student['val']['student_id'][-3:]
+		if getconfig('admin_public_name', True) == False:
+			data_student['val']['student_name'] = '***'
 		return jsonify(data_student['val'])
 	abort(404)
 
@@ -745,108 +788,118 @@ def execute(input_val='', time_limit=1):
 
 	return outs, errs, p.returncode, correct
 
-def validator(input_val='', output_val='', check_num=True, check_char=True, max_error=0.001, time_limit=1):
+def validator_real(output, answer, check_num, check_char):
+	if check_num == False and check_char == False:
+		correct = 1 #correct
+	elif check_num == True and check_char == False:
+		#remove except numbers
+		out = re.sub(r'[^0-9.\-]', r' ', output)
+		ref = re.sub(r'[^0-9.\-]', r' ', answer)
+		#remove punctuations without number
+		while True:
+			out, cnt_sub_out = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', out)
+			ref, cnt_sub_ref = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', ref)
+			if cnt_sub_out == 0 and cnt_sub_ref == 0: break
+		out = out.strip('.')
+		ref = ref.strip('.')
+		#remove excessive whitespaces
+		out = re.sub(r'\s+', ' ', out).strip()
+		ref = re.sub(r'\s+', ' ', ref).strip()
+
+		out = out.split()
+		ref = ref.split()
+		
+		if len(out) != len(ref): #different number of output: wrong!
+			correct = 0
+		else:
+			state = 1 
+			for k, i in enumerate(out):
+				j = ref[k]
+				if i != j: #first, compare as string
+					state = 0
+					break
+			if state == 1: #if all values are exactly the same
+				correct = 1 #correct
+			else:
+				state = 1
+				for k, i in enumerate(out):
+					j = ref[k]
+					i_d = re.sub(r'\.0+', '', i)
+					j_d = re.sub(r'\.0+', '', j)
+					
+					if i_d != j_d: #compare as float
+						state = 0
+						break
+				if state == 1:
+					correct = 5 #wrong decimal format (1.0 / 1.000 / 1 type)
+				else:
+					state = 1
+					for k, i in enumerate(out):
+						j = ref[k]
+						if '.' in i: #if float format
+							try:
+								i_f = float(i)
+							except:
+								i_f = -1e+20
+						else: #if int format
+							i_f = int(i)
+						if '.' in j:
+							try:
+								j_f = float(j)
+							except:
+								j_f = 1e+20
+						else: #if int format
+							j_f = int(j)
+						if abs(i_f - j_f) > max_error: #compare as float
+							state = 0
+							break
+						i_d = re.sub(r'\.[0-9]+', '', i)
+						j_d = re.sub(r'\.[0-9]+', '', j)
+						if i_d != j_d: #seems the same as float, but not at int (does not considered floating point error)
+							state = 0
+							break
+					if state == 1:
+						correct = 5 #wrong decimal format (1.0001 / 1.000 type)
+					else:
+						correct = 0 #wrong answer
+	elif check_num == False and check_char == True:
+		#remove all numbers
+		out = re.sub(r'-?[0-9.]', r' ', outs)
+		ref = re.sub(r'-?[0-9.]', r' ', output_val)
+		#remove excessive whitespaces
+		out = re.sub(r'\s+', ' ', out).strip().lower()
+		ref = re.sub(r'\s+', ' ', ref).strip().lower()
+
+		if out == ref:
+			correct = 1
+		else:
+			correct = 0
+
+	elif check_num == True and check_char == True:
+		#replace whitespaces and lower
+		out = re.sub(r'\s+', ' ', outs).strip().lower()
+		ref = re.sub(r'\s+', ' ', output_val).strip().lower()
+		if out == ref:
+			correct = 1
+		else:
+			correct = 0
+	return correct
+
+def validator(input_val='', output_val='', check_num=True, check_char=True, max_error=0.001, time_limit=1, is_val_custom=False):
 	outs, errs, returncode, correct = execute(input_val, time_limit)
+	score_full = 0
+	details = ''
 
 	if correct == -1: #not TLE
 
 		if returncode != 0:
 			correct = 4 #runtime error
 		else:
-			if check_num == False and check_char == False:
-				correct = 1 #correct
-			elif check_num == True and check_char == False:
-				#remove except numbers
-				out = re.sub(r'[^0-9.\-]', r' ', outs)
-				ref = re.sub(r'[^0-9.\-]', r' ', output_val)
-				#remove punctuations without number
-				while True:
-					out, cnt_sub_out = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', out)
-					ref, cnt_sub_ref = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', ref)
-					if cnt_sub_out == 0 and cnt_sub_ref == 0: break
-				out = out.strip('.')
-				ref = ref.strip('.')
-				#remove excessive whitespaces
-				out = re.sub(r'\s+', ' ', out).strip()
-				ref = re.sub(r'\s+', ' ', ref).strip()
-
-				out = out.split()
-				ref = ref.split()
-				
-				if len(out) != len(ref): #different number of output: wrong!
-					correct = 0
-				else:
-					state = 1 
-					for k, i in enumerate(out):
-						j = ref[k]
-						if i != j: #first, compare as string
-							state = 0
-							break
-					if state == 1: #if all values are exactly the same
-						correct = 1 #correct
-					else:
-						state = 1
-						for k, i in enumerate(out):
-							j = ref[k]
-							i_d = re.sub(r'\.0+', '', i)
-							j_d = re.sub(r'\.0+', '', j)
-							
-							if i_d != j_d: #compare as float
-								state = 0
-								break
-						if state == 1:
-							correct = 5 #wrong decimal format (1.0 / 1.000 / 1 type)
-						else:
-							state = 1
-							for k, i in enumerate(out):
-								j = ref[k]
-								if '.' in i: #if float format
-									try:
-										i_f = float(i)
-									except:
-										i_f = -1e+20
-								else: #if int format
-									i_f = int(i)
-								if '.' in j:
-									try:
-										j_f = float(j)
-									except:
-										j_f = 1e+20
-								else: #if int format
-									j_f = int(j)
-								if abs(i_f - j_f) > max_error: #compare as float
-									state = 0
-									break
-								i_d = re.sub(r'\.[0-9]+', '', i)
-								j_d = re.sub(r'\.[0-9]+', '', j)
-								if i_d != j_d: #seems the same as float, but not at int (does not considered floating point error)
-									state = 0
-									break
-							if state == 1:
-								correct = 5 #wrong decimal format (1.0001 / 1.000 type)
-							else:
-								correct = 0 #wrong answer
-			elif check_num == False and check_char == True:
-				#remove all numbers
-				out = re.sub(r'-?[0-9.]', r' ', outs)
-				ref = re.sub(r'-?[0-9.]', r' ', output_val)
-				#remove excessive whitespaces
-				out = re.sub(r'\s+', ' ', out).strip().lower()
-				ref = re.sub(r'\s+', ' ', ref).strip().lower()
-
-				if out == ref:
-					correct = 1
-				else:
-					correct = 0
-
-			elif check_num == True and check_char == True:
-				#replace whitespaces and lower
-				out = re.sub(r'\s+', ' ', outs).strip().lower()
-				ref = re.sub(r'\s+', ' ', output_val).strip().lower()
-				if out == ref:
-					correct = 1
-				else:
-					correct = 0
+			if is_val_custom == True:
+				from environ.validator import validator as validator_custom
+				correct, score, score_full, details = validator_custom(outs, output_val)
+			else:
+				correct = validator_real(outs, output_val, check_num, check_char)
 	
 	result = {
 		'result': returncode,
@@ -855,7 +908,9 @@ def validator(input_val='', output_val='', check_num=True, check_char=True, max_
 		'correct': correct,
 		'answer': output_val,
 		'input': input_val,
-		'score': 0
+		'score': score,
+		'score_full': score_full,
+		'details': details,
 	}
 	return result
 
