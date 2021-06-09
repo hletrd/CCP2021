@@ -404,6 +404,7 @@ def project_load(project_name):
 					content = zipf.namelist()
 					code = ''
 					result = 0
+					target_path = os.path.join(path, student_name + '_' + student_id)
 					for i in content:
 						filename = i.split('/')[-1]
 						if len(filename) > 0 and filename[0] == '.':
@@ -411,7 +412,6 @@ def project_load(project_name):
 							pass
 						elif len(i) >= 7 and i[-7:] == 'main.py' and result == 0:
 							result = 1
-							target_path = os.path.join(path, student_name + '_' + student_id)
 							try:
 								os.mkdir(target_path)
 							except FileExistsError:
