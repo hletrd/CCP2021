@@ -9,13 +9,3 @@ __pycache__
 input/*
 environ/*
 misc
-static/ace/
-static/amcharts/
-static/bootstrap/
-static/jquery/
-static/remixicon/
-!static/ace/.placeholder
-!static/amcharts/.placeholder
-!static/bootstrap/.placeholder
-!static/jquery/.placeholder
-!static/remixicon/.placeholder
