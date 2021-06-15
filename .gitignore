@@ -10,4 +10,8 @@ input/*
 environ/*
 misc
 static/*
-!static/.placeholder
+!static/ace/.placeholder
+!static/amcharts/.placeholder
+!static/bootstrap/.placeholder
+!static/jquery/.placeholder
+!static/remixicon/.placeholder
