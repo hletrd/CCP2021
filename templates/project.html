@@ -10,7 +10,7 @@
 		border-color: #ca6510;
 	}
 </style>
-<a href="/project/upload/{{data.project_name}}" class="btn btn-outline-success"><i class="ri-file-upload-line"></i> Upload new submissions</a> <a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-edit-box-line"></i> Manage validation sets</a> <a href="/project/download/{{data.project_name}}?{{data.data.rand}}" class="btn btn-primary"><i class="ri-file-download-line"></i> Download results as .csv</a>
+<a href="/project/upload/{{data.project_name}}" class="btn btn-outline-success"><i class="ri-file-upload-line"></i> Upload new submissions</a> <a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-edit-box-line"></i> Manage validation sets</a> <a href="/project/download/{{data.project_name}}?{{data.data.rand}}" class="btn btn-primary"><i class="ri-file-download-line"></i> Download results as .csv</a> <a href="/project/download-code/{{data.project_name}}?{{data.data.rand}}" class="btn btn-outline-dark"><i class="ri-file-zip-line"></i> Download all codes as .zip</a>
 <div class="spacer-15"></div>
 <label>Score mean: {{data.score_avg|round(2)}} / {{data.score_max|round(2)}}, stdev: {{data.score_std|round(2)}}</label>
 {%include "chart.html"%}
