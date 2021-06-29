@@ -22,6 +22,7 @@ app = Flask(__name__)
 
 input_path = './input/'
 run_path = './environ/'
+temp_path = './temp/'
 
 dbfile = 'ccp.db'
 
@@ -48,15 +49,21 @@ def auth():
 def get_all_list():
 	conn = sqlite3.connect(dbfile)
 	c = conn.cursor()
-	c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
-	metadata = c.fetchone()
-	project = json.loads(metadata[2])
+	try:
+		c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
+		metadata = c.fetchone()
+		project = json.loads(metadata[2])
+	except:
+		project = []
 	if 'auth' not in session:
 		project = list(filter(lambda x: x['public'], project))
 	project = list(map(lambda x: x['name'], project))
-	c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
-	metadata = c.fetchone()
-	hw = json.loads(metadata[2])
+	try:
+		c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
+		metadata = c.fetchone()
+		hw = json.loads(metadata[2])
+	except:
+		hw = []
 	if 'auth' not in session:
 		hw = list(filter(lambda x: x['public'], hw))
 	hw = list(map(lambda x: x['name'], hw))
@@ -87,11 +94,13 @@ def prepare_data():
 		c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
 		metadata = c.fetchone()
 		project = json.loads(metadata[2])
+	except:
+		project = []
+	try:
 		c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
 		metadata = c.fetchone()
 		hw = json.loads(metadata[2])
 	except:
-		project = []
 		hw = []
 
 	password = getconfig('password')
@@ -351,6 +360,43 @@ def project_download(project_name):
 		resp = make_response(result)
 		resp.headers['Content-Type'] = 'text/csv;charset=UTF-8'
 		resp.headers['Content-Disposition'] = 'attachment;filename={}.csv'.format(project_name)
+		return resp
+	else:
+		abort(404)
+
+@app.route('/project/download-code/<string:project_name>')
+def project_download_code(project_name):
+	if project_name in get_all_list():
+		if not 'auth' in session:
+			abort(401)
+		conn = sqlite3.connect(dbfile)
+		c = conn.cursor()
+		c.execute('SELECT * FROM `{}`;'.format(project_name))
+		projects = c.fetchall()
+		projects = list(map(lambda x: list(x), projects))
+
+		if not os.path.exists(temp_path):
+			os.mkdir(temp_path)
+		for i in os.listdir(temp_path):
+			os.remove(os.path.join(temp_path, i))
+		zipped = zipfile.ZipFile(os.path.join(temp_path, 'temp.zip'), 'w')
+		for i in projects:
+			i[4] = json.loads(i[4])
+			if 'val' in i[4]:
+				code = i[4]['code']
+				path_code = os.path.join(temp_path, i[1]+'_'+i[2]+'.py')
+				with open(path_code, 'w') as f:
+					f.write(code)
+				zipped.write(path_code, i[1]+'_'+i[2]+'.py')
+				os.remove(path_code)
+		zipped.close()
+		
+		with open(os.path.join(temp_path, 'temp.zip'), 'rb') as f:
+			result = f.read()
+
+		resp = make_response(result)
+		resp.headers['Content-Type'] = 'application/zip;charset=UTF-8'
+		resp.headers['Content-Disposition'] = 'attachment;filename={}.zip'.format(project_name)
 		return resp
 	else:
 		abort(404)
@@ -691,9 +737,11 @@ def run_code(project_name):
 			'student_name': student_name,
 			'student_id': student_id
 		}
-
+		if not os.path.exists(run_path):
+			os.mkdir(run_path)
 		with open(os.path.join(run_path, getconfig('run_filename', 'main.py')), 'w') as f:
 			f.write(code)
+		time.sleep(1)
 		
 		c.execute('SELECT * FROM `{}_val`;'.format(project_name))
 		val_set = c.fetchall()
@@ -703,7 +751,7 @@ def run_code(project_name):
 		is_val_custom = False
 		if 'is_val_custom' in metadata and metadata['is_val_custom']:
 			code_validator = metadata['code_val_custom']
-			with open(os.path.join(run_path, 'validator.py'), 'w') as f:
+			with open(os.path.join(run_path, 'validator_custom.py'), 'w') as f:
 				f.write(code_validator)
 			is_val_custom = True
 
@@ -718,10 +766,10 @@ def run_code(project_name):
 		for i in val_set:
 			i[3] = json.loads(i[3])
 
-			result = validator(i[1], i[2], check_num=i[3]['val_mode']['check_num'], check_char=i[3]['val_mode']['check_char'], max_error=max_error, time_limit=time_limit, is_val_custom=is_val_custom)
+			result = validator(i[1], i[2], check_num=i[3]['val_mode']['check_num'], check_char=i[3]['val_mode']['check_char'], max_error=max_error, time_limit=time_limit, is_val_custom=is_val_custom, do_validation=(code_id != '-1'))
 			if is_val_custom: #custom score for custom validator
 				data_student['val']['score'] += result['score']
-				data_student['val']['score_total'] += result['score_full']
+				data_student['val']['score_total'] += i[3]['score']
 			else:
 				if result['correct'] == 1:
 					data_student['val']['score'] += i[3]['score']
@@ -741,7 +789,7 @@ def run_code(project_name):
 				
 				data_student['val']['score_total'] += i[3]['score']
 			data_student['val']['details'].append(result)
-			time.sleep(0.2)
+			time.sleep(1)
 
 		data_student['val']['score_total'] = round(data_student['val']['score_total'], 3)
 		data_student['val']['score'] = round(data_student['val']['score'], 3)
@@ -749,8 +797,10 @@ def run_code(project_name):
 		data_student['val']['last'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		data_json = json.dumps(data_student)
-
-		os.remove(os.path.join(run_path, getconfig('run_filename', 'main.py')))
+		try:
+			os.remove(os.path.join(run_path, getconfig('run_filename', 'main.py')))
+		except:
+			pass
 
 		if code_id != '-1':
 			c.execute('UPDATE {} SET `result`=?, `data`=? WHERE `id`=?;'.format(project_name), (4, data_json, code_id,))
@@ -864,8 +914,8 @@ def validator_real(output, answer, check_num, check_char):
 						correct = 0 #wrong answer
 	elif check_num == False and check_char == True:
 		#remove all numbers
-		out = re.sub(r'-?[0-9.]', r' ', outs)
-		ref = re.sub(r'-?[0-9.]', r' ', output_val)
+		out = re.sub(r'-?[0-9.]', r' ', output)
+		ref = re.sub(r'-?[0-9.]', r' ', answer)
 		#remove excessive whitespaces
 		out = re.sub(r'\s+', ' ', out).strip().lower()
 		ref = re.sub(r'\s+', ' ', ref).strip().lower()
@@ -877,17 +927,18 @@ def validator_real(output, answer, check_num, check_char):
 
 	elif check_num == True and check_char == True:
 		#replace whitespaces and lower
-		out = re.sub(r'\s+', ' ', outs).strip().lower()
-		ref = re.sub(r'\s+', ' ', output_val).strip().lower()
+		out = re.sub(r'\s+', ' ', output).strip().lower()
+		ref = re.sub(r'\s+', ' ', answer).strip().lower()
 		if out == ref:
 			correct = 1
 		else:
 			correct = 0
 	return correct
 
-def validator(input_val='', output_val='', check_num=True, check_char=True, max_error=0.001, time_limit=1, is_val_custom=False):
+def validator(input_val='', output_val='', check_num=True, check_char=True, max_error=0.001, time_limit=1, is_val_custom=False, do_validation=True):
 	outs, errs, returncode, correct = execute(input_val, time_limit)
 	score_full = 0
+	score = 0
 	details = ''
 
 	if correct == -1: #not TLE
@@ -895,12 +946,17 @@ def validator(input_val='', output_val='', check_num=True, check_char=True, max_
 		if returncode != 0:
 			correct = 4 #runtime error
 		else:
-			if is_val_custom == True:
-				from environ.validator import validator as validator_custom
-				correct, score, score_full, details = validator_custom(outs, output_val)
+			if do_validation == True:
+				if is_val_custom == True:
+					import importlib
+					import environ.validator_custom
+					importlib.reload(environ.validator_custom)
+					correct, score, score_full, details = environ.validator_custom.validator(outs, output_val)
+				else:
+					correct = validator_real(outs, output_val, check_num, check_char)
 			else:
-				correct = validator_real(outs, output_val, check_num, check_char)
-	
+				correct = 1
+
 	result = {
 		'result': returncode,
 		'output': outs,
@@ -919,4 +975,4 @@ def staticfile(path):
 	return send_from_directory('static', path)
 
 if __name__ == "__main__":
-	app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=True)
+	app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=False)
