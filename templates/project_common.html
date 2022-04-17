@@ -107,8 +107,8 @@ function render(data) {
 	scorebox.html('');
 	resultbox.html('');
 
-	$('<h6>Student: '+data.student_name+' ('+data.student_id+'), Last run on '+data.last+'</h6>').appendTo(scorebox);
-	$('<h6>Total score: '+data.score+' / '+data.score_total+'</h6>').appendTo(scorebox);
+	$('<h6>학생: '+data.student_name+' ('+data.student_id+'), 최종 채점 일시 '+data.last+'</h6>').appendTo(scorebox);
+	$('<h6>총점: '+data.score+' / '+data.score_total+'</h6>').appendTo(scorebox);
 	for(var i = 0; i < data.details.length; i++) {
 		var result = $('<p>').addClass('result-each');
 		result.append('Case <span class="number">#'+i+'</span>: ');
