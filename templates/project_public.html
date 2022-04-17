@@ -13,9 +13,9 @@
 	<thead>
 		<tr>
 			<th scope="col">#</th>
-			<th scope="col">학번</th>
+			<th scope="col">학생ID</th>
 			<th scope="col">이름</th>
-			<th scope="col">파일명 형식</th>
+			<th scope="col">제출 파일</th>
 			<th scope="col">점수</th>
 			<th scope="col">자세히</th>
 		</tr>
@@ -27,11 +27,17 @@
 			<td>{{i[1]}}</td>
 			<td>{{i[2]}}</td>
 			<td>
-				{% if i[4].log_zip == 'Unzip succeed' %}
+{#}				{% if i[4].log_zip == 'Unzip succeed' %}
 				문제없음
 				{% else %}
 				파일명 잘못됨
-				{% endif %}
+				{% endif %}#}
+				{%if i[3] != 1%}
+				{#/#}
+				{{(i[4].log_zip_detail|join(', '))[:10]}}{%if i[4].log_zip_detail|join(', ')|length > 10%}...{%endif%}
+				{%else%}
+				main.py
+				{%endif%}
 			</td>
 			<td>{{i[4].val.score}}</td>
 			<td><button onclick="view_detail(this)" data-id="{{i[0]}}" type="button" class="btn btn-sm btn-info"><i class="ri-more-fill"></i></button></td>

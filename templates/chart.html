@@ -10,7 +10,7 @@
 		];
 	
 		var bin = [];
-		var bin_unit = 5;
+		var bin_unit = 2;
 		
 		for (var i = 0; i <= {{data.score_max|round}}; i+=bin_unit) {
 			bin.push(0);
@@ -22,7 +22,7 @@
 	
 		chart.data = [];
 		for (var i = 0; i < bin.length; i++) {
-			chart.data.push({'range': ''+(i*bin_unit)+'-'+((+i+1)*bin_unit), 'count':bin[i]})
+			chart.data.push({'range': ''+(i*bin_unit)/*+'-'+((+i+1)*bin_unit)*/, 'count':bin[i]})
 		}
 	
 		var total = {{data.projects|length}};

@@ -1,18 +1,24 @@
 {%include '_header.html'%}
-<h5>채점 결과 설명</h5>
 {%include 'project_common.html'%}
 <hr>
+<h5>채점 결과 설명</h5>
 <ul>
 	<li><span class="correct">Correct</span>: 정답입니다.</li>
 	<li><span class="message-wrong-format">Wrong decimal format</span>: 답(숫자)은 맞으나 소수점 출력 형식이 잘못되었습니다. 정수를 출력해야 하는 문제에서 실수를 출력하거나 (15 → 15.0 등), 잘못된 소수점 자리를 출력하는 경우(15.000 → 15.0 등) 나타납니다. 감점(-{{data.deduce_decimal}}%)이 있습니다.</li>
 	<li><span class="tle">Time limit exceed</span>: 실행 시간 제한을 초과하였습니다. 주로 프로그램이 무한 루프를 수행하게 되면 나타납니다.</li>
 	<li><span class="message-error">Runtime error</span>: 프로그램 실행 중 오류가 발생하여 비정상적으로 종료되었습니다.</li>
-	<li><span class="message-wrong-answer">Wrong answer</span>: 답(숫자)이 틀렸습니다. (15.000 → 15.001, 15.000 → -15.000 등)</li>
+	<li><span class="message-wrong-answer">Wrong answer</span>: 답(출력 내용 또는 값)이 틀렸습니다. (15.000 → 15.001, 15.000 → -15.000 등)</li>
 </ul>
 <hr>
+<h5>채점 기준 안내</h5>
 <ul>
 	<li><strong>숫자 채점</strong>: 출력하는 숫자의 값이 정답과 일치하는지 검사합니다.</li>
-	<li><strong>문자 채점</strong>: 출력하는 문자/문자열이 정답과 일치하는지 검사합니다. 대소문자 및 공백(스페이스, 탭, 줄바꿈 등)은 구분하지 않습니다.</li>
+	<li><strong>문자 채점</strong>: 출력하는 문자/문자열이 정답과 일치하는지 검사합니다.
+	<ul>
+		<li>대소문자 및 공백(스페이스, 탭, 줄바꿈 등)의 종류 및 개수는 구분하지 않습니다. (1 5와 1&nbsp;&nbsp;5, 1&emsp;5는 모두 같습니다.)</li>
+		<li>다만 공백의 유무는 구분합니다. 이는 153을 출력한 경우와 1 5 3을 출력한 경우는 서로 다르게 취급되어야 하기 때문입니다.</li>
+	</ul>
+</ul>
 <hr>
 <h5>기타</h5>
 <ul>
