@@ -441,7 +441,7 @@ def project_load(project_name):
 		with zipfile.ZipFile(os.path.join(path, 'uploaded.zip'), 'r') as zipf:
 			content = zipf.namelist()
 			for i in content:
-				if i.split('.')[-1] == 'zip':
+				if i.split('.')[-1].lower() == 'zip':
 					zipf.extract(i, path)
 
 		subs = os.listdir(path)
@@ -457,7 +457,7 @@ def project_load(project_name):
 		conn.commit()
 		
 		for file in subs:
-			if file.split('.')[-1] != 'zip': continue #ignore if not .zip
+			if file.split('.')[-1].lower() != 'zip': continue #ignore if not .zip
 			if file == 'uploaded.zip': continue #ignore uploaded zip file
 			student_name = file.split('_')[0]
 			student_id = file.split('_')[1]
@@ -495,7 +495,7 @@ def project_load(project_name):
 							data['log_zip_detail'].append(i)
 					if result == 0: #when no main.py is found
 						for j in content:
-							if len(j) >= 3 and j[-3:] == '.py':
+							if len(j) >= 3 and j[-3:].lower() == '.py':
 								filename = j.split('/')[-1]
 								if len(filename) > 0 and filename[0] == '.':
 									#hidden file
