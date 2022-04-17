@@ -641,7 +641,7 @@ def project_code_save(project_name, index):
 		try:
 			result['code'] = request.form.get('code')
 			result = json.dumps(result)
-			c.execute('UPDATE {} SET `data`=? WHERE `id`=?;'.format(project_name), (result, index,))
+			c.execute('UPDATE `{}` SET `data`=? WHERE `id`=?;'.format(project_name), (result, index,))
 			conn.commit()
 			return 'ok'
 		except:
@@ -685,7 +685,7 @@ def view_code(project_name, id):
 		conn = sqlite3.connect(dbfile)
 		c = conn.cursor()
 		try:
-			c.execute('SELECT * FROM {} WHERE `id`=?;'.format(project_name), (id,))
+			c.execute('SELECT * FROM `{}` WHERE `id`=?;'.format(project_name), (id,))
 		except:
 			pass
 		result = c.fetchone()
@@ -699,7 +699,7 @@ def view_result(project_name, id):
 			conn = sqlite3.connect(dbfile)
 			c = conn.cursor()
 			try:
-				c.execute('SELECT * FROM {} WHERE `id`=?;'.format(project_name), (id,))
+				c.execute('SELECT * FROM `{}` WHERE `id`=?;'.format(project_name), (id,))
 			except:
 				pass
 			result = c.fetchone()
@@ -712,7 +712,7 @@ def view_result(project_name, id):
 		conn = sqlite3.connect(dbfile)
 		c = conn.cursor()
 		try:
-			c.execute('SELECT * FROM {} WHERE `id`=?;'.format(project_name), (id,))
+			c.execute('SELECT * FROM `{}` WHERE `id`=?;'.format(project_name), (id,))
 		except:
 			pass
 		result = c.fetchone()
@@ -741,7 +741,7 @@ def run_code(project_name):
 			data_student = {}
 			code = request.form.get('code')
 		else:
-			c.execute('SELECT * FROM {} WHERE `id`=?;'.format(project_name), (code_id,))
+			c.execute('SELECT * FROM `{}` WHERE `id`=?;'.format(project_name), (code_id,))
 
 			result = c.fetchone()
 			if result == None:
