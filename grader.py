@@ -163,7 +163,6 @@ def settings():
 	if not 'auth' in session:
 		abort(404)
 	if request.method == 'POST':
-		data = prepare_data()
 		setconfig('max_error', float(request.form.get('max_error', 0)))
 		setconfig('deduce_decimal', float(request.form.get('deduce_decimal', 0))/100)
 		setconfig('deduce_wrong', float(request.form.get('deduce_wrong', 0))/100)
@@ -599,6 +598,19 @@ def init_db():
 	try:
 		c.execute('CREATE TABLE `metadata`(`id` INTEGER PRIMARY KEY AUTOINCREMENT, `type` TEXT, `value` TEXT);')
 		conn.commit()
+		setconfig('deduce_decimal', 0.1)
+		setconfig('deduce_wrong', 1.0)
+		setconfig('deduce_tle', 1.0)
+		setconfig('deduce_runtime', 1.0)
+
+		setconfig('admin_public_id', True)
+		setconfig('admin_public_name', True)
+
+		setconfig('script', 'python3')
+		setconfig('run_filename', 'main.py')
+
+		setconfig('max_error', 0.001)
+		setconfig('time_limit', 1.0)
 	except:
 		pass
 
