@@ -10,9 +10,9 @@
 		border-color: #ca6510;
 	}
 </style>
-<a href="/project/upload/{{data.project_name}}" class="btn btn-outline-success"><i class="ri-file-upload-line"></i> Upload new submissions</a> <a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-edit-box-line"></i> Manage validation sets</a> <a href="/project/download/{{data.project_name}}?{{data.data.rand}}" class="btn btn-primary"><i class="ri-file-download-line"></i> Download results as .csv</a> <a href="/project/download-code/{{data.project_name}}?{{data.data.rand}}" class="btn btn-outline-dark"><i class="ri-file-zip-line"></i> Download all codes as .zip</a>
+<a href="/project/upload/{{data.project_name}}" class="btn btn-outline-success"><i class="ri-file-upload-line"></i> eTL 제출물 로드</a> <a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-edit-box-line"></i> 채점 데이터 관리</a> <a href="/project/download/{{data.project_name}}?{{data.data.rand}}" class="btn btn-primary"><i class="ri-file-download-line"></i> 전체 결과 다운로드 (.csv)</a> <a href="/project/download-code/{{data.project_name}}?{{data.data.rand}}" class="btn btn-outline-dark"><i class="ri-file-zip-line"></i> 전체 코드 다운로드 (.zip)</a>
 <div class="spacer-15"></div>
-<label>Score mean: {{data.score_avg|round(2)}} / {{data.score_max|round(2)}}, stdev: {{data.score_std|round(2)}}</label>
+<label>점수 평균: {{data.score_avg|round(2)}}, 만점: {{data.score_max|round(2)}}, 표준편차: {{data.score_std|round(2)}}</label>
 {%include "chart.html"%}
 <div class="row">
 <div class="col-md-6">
@@ -37,7 +37,6 @@
 					</div>
 					<div class="spacer-15"></div>
 					<ul>
-						<li>파일명 형식은 무조건 맞는 것으로 처리됩니다.</li>
 						<li>코드는 추후 우측의 코드 에디터에서 따로 입력해야 합니다.</li>
 					</ul>
 				</div>
@@ -71,7 +70,7 @@
 			<th scope="col">#</th>
 			<th scope="col">학번</th>
 			<th scope="col">이름</th>
-			<th scope="col">파일명 형식</th>
+			<th scope="col">제출 파일</th>
 			<th scope="col">점수</th>
 			<th scope="col">자세히</th>
 			<th scope="col">삭제</th>
@@ -98,14 +97,12 @@
 </table>
 </div>
 <div class="col-md-6">
-	<button type="button" class="btn btn-success" id="btn-run" onclick="run()"><i class="ri-play-fill"></i> Run &amp; Validate</button> <button type="button" class="btn btn-warning" id="btn-runall" onclick="runall({%if data.projects[0]%}{{data.projects[0][0]}}{%else%}0{%endif%})"><i class="ri-task-line"></i> Run &amp; Validate All</button> <label id="status"></label><!--<button type="button" class="btn btn-info"><i class="ri-save-fill"></i> Save changes</button>-->
-	<div class="spacer-15"></div>
-	<button type="button" class="btn btn-info" id="btn-save" onclick="save()" ><i class="ri-save-fill"></i> 코드 저장</button>
+	<button type="button" class="btn btn-success" id="btn-run" onclick="run()"><i class="ri-play-fill"></i> 실행 및 채점</button> <button type="button" class="btn btn-warning" id="btn-runall" onclick="runall({%if data.projects[0]%}{{data.projects[0][0]}}{%else%}0{%endif%})"><i class="ri-task-line"></i> 전체 실행 및 채점</button> <label id="status"></label><!--<button type="button" class="btn btn-info"><i class="ri-save-fill"></i> Save changes</button>-->
 	<div class="spacer-15"></div>
 	<div id="scroll-target"></div>
 	<div class="card">
 		<div class="card-body">
-			<h5 class="card-title">Results</h5>
+			<h5 class="card-title">채점 결과</h5>
 			<hr>
 			<p class="card-text" id="score-result">
 			</p>
@@ -116,7 +113,7 @@
 		<div class="accordion-item">
 			<h2 class="accordion-header" id="headingOne">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse" aria-expanded="true" aria-controls="collapse">
-					Detailed results...
+					상세 결과...
 				</button>
 			</h2>
 			<div id="collapse" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion">
@@ -127,6 +124,7 @@
 	</div>
 	<div class="spacer-15"></div>
 	<pre><div id="code-preview">print("Hello, world!") #the code appears here.</div></pre>
+	<button type="button" class="btn btn-info" id="btn-save" onclick="save()" ><i class="ri-save-fill"></i> 코드 저장</button>
 </div>
 </div>
 <script>

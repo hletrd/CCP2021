@@ -1,5 +1,5 @@
 {%include '_header.html'%}
-<a href="/project/{{data.project_name}}" class="btn btn-secondary"><i class="ri-arrow-go-back-line"></i> Back to list</a> 
+<a href="/project/{{data.project_name}}" class="btn btn-secondary"><i class="ri-arrow-go-back-line"></i> 리스트</a> 
 <form class="jumbotron" method="post" action="/project/validation/{{data.project_name}}" enctype="multipart/form-data">
 	<div class="row justify-content-sm-center">
 		<div class="col-sm-6">
@@ -9,15 +9,15 @@
 				<div class="col-sm-12">
 					<div class="form-check form-switch">
 						<input class="form-check-input" type="checkbox" name="check-custom" id="check-custom"{%if data.is_val_custom%} checked{%endif%} onchange="check_toggle()">
-						<label class="form-check-label" for="check-custom">커스텀 채점 활성화 (기존 채점 기준은 무시됩니다.)</label>
+						<label class="form-check-label" for="check-custom">커스텀 채점 사용 (기존 채점 기준은 무시됩니다.)</label>
 					</div>
 				</div>
 			</div>
 			<hr>
 			<div id="hide"{%if not data.is_val_custom%} style="display: none;"{%endif%}>
 				<label>
-					function name: <code>def validator(user_output, correct_output)</code><br />
-					return value: <code>(correctness, score earned, full score, details)</code><br/>
+					채점 함수 이름 및 파라미터: <code>def validator(user_output, correct_output)</code><br />
+					채점 함수의 반환값: <code>(correctness, score earned, full score, details)</code><br/>
 					correctness: 0 (wrong answer), 1 (correct), 5 (wrong decimal format)
 				</label>
 				<div class="row">
@@ -28,7 +28,7 @@
 				</div>
 				<hr>
 			</div>
-			<button type="submit" onclick="return setcode()" class="btn btn-success"><i class="ri-save-line"></i> Save</button>
+			<button type="submit" onclick="return setcode()" class="btn btn-success"><i class="ri-save-line"></i> 저장</button>
 		</div>
 	</div>
 </form>
@@ -68,10 +68,10 @@
 </table>
 <button onclick="add()" type="button" class="btn btn-primary"><i class="ri-add-box-line"></i> Add</button> <button onclick="save()" type="button" class="btn btn-success"><i class="ri-save-line"></i> Save</button>
 <hr>
-<h5>Type in a code to generate answer(s)</h5>
+<h5>정답 코드를 이용해 정답 데이터 자동으로 만들기</h5>
 <div class="card">
 <div class="card-body">
-	<h5 class="card-title">Results</h5>
+	<h5 class="card-title">실행 결과</h5>
 	<hr>
 	<p class="card-text" id="run-result"></p>
 </div>
@@ -79,7 +79,7 @@
 <div class="spacer-15"></div>
 <div id="code-editor"></div>
 <div class="spacer-15"></div>
-<button type="button" class="btn btn-info" onclick="answer()"><i class="ri-mark-pen-fill"></i> Generate answers</button>
+<button type="button" class="btn btn-info" onclick="answer()"><i class="ri-mark-pen-fill"></i> 정답 만들기</button>
 <script src="/static/ace/ace.js"></script>
 <script>
 var count = {{data.val_set | length}};
