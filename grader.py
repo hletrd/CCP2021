@@ -73,14 +73,20 @@ def get_all_list():
 def get_all_list_dict():
 	conn = sqlite3.connect(dbfile)
 	c = conn.cursor()
-	c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
-	metadata = c.fetchone()
-	project = json.loads(metadata[2])
+	try:
+		c.execute('SELECT * FROM `metadata` WHERE `type`="project";')
+		metadata = c.fetchone()
+		project = json.loads(metadata[2])
+	except:
+		project = []
 	if 'auth' not in session:
 		project = filter(lambda x: x['public'], project)
-	c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
-	metadata = c.fetchone()
-	hw = json.loads(metadata[2])
+	try:
+		c.execute('SELECT * FROM `metadata` WHERE `type`="hw";')
+		metadata = c.fetchone()
+		hw = json.loads(metadata[2])
+	except:
+		hw = []
 	if 'auth' not in session:
 		hw = filter(lambda x: x['public'], hw)
 	result = dict([(i['name'], i) for i in project]+[(i['name'], i) for i in hw])
