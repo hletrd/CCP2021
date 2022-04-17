@@ -832,6 +832,20 @@ def run_code(project_name):
 		return jsonify(data_student['val'])
 	abort(404)
 
+class PKiller(threading.Thread):
+	def __init__(self, timeout, process):
+		threading.Thread.__init__(self)
+		self.timeout = timeout
+		self.process = process
+	
+	def run(self):
+		time.sleep(self.timeout)
+		try:
+			self.process.kill()
+		except:
+			pass
+
+
 def execute(input_val='', time_limit=1):
 	p = subprocess.Popen([getconfig('script', 'python3')+' '+getconfig('run_filename', 'main.py')], cwd=run_path, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
 	input_lines = input_val.split('\n')
@@ -841,11 +855,17 @@ def execute(input_val='', time_limit=1):
 		p.stdin.flush()
 
 	correct = -1 #initial value
+	
+	#launch destruction logic
+	pk = PKiller(time_limit+0.5, p)
+	pk.start()
+
 	try:
 		outs, errs = p.communicate(timeout=time_limit)
 	except subprocess.TimeoutExpired:
 		p.kill()
-		outs, errs = p.communicate()
+		#outs, errs = p.communicate()'
+		outs, errs = b'', b''
 		correct = 3 #TLE
 
 	outs = outs.decode()
