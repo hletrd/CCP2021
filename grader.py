@@ -809,7 +809,7 @@ def run_code(project_name):
 				
 				data_student['val']['score_total'] += i[3]['score']
 			data_student['val']['details'].append(result)
-			time.sleep(1)
+			time.sleep(0.05)
 
 		data_student['val']['score_total'] = round(data_student['val']['score_total'], 3)
 		data_student['val']['score'] = round(data_student['val']['score'], 3)
