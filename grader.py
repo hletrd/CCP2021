@@ -132,7 +132,9 @@ def index():
 @app.route('/details')
 def detail():
 	deduce_decimal = getconfig('deduce_decimal', 0.1)
-	return render_template('details.html', data={'data': prepare_data(), 'deduce_decimal': deduce_decimal*100})
+	hash_prime = getconfig('hash_prime', 997)
+	hashed = 202212345 % hash_prime
+	return render_template('details.html', data={'data': prepare_data(), 'deduce_decimal': deduce_decimal*100, 'hash_prime': hash_prime, 'hashed': hashed})
 
 def getconfig(typetext, default=None):
 	conn = sqlite3.connect(dbfile)
@@ -183,6 +185,8 @@ def settings():
 
 	script = getconfig('script', 'python3')
 	run_filename = getconfig('run_filename', 'main.py')
+
+	hash_prime = getconfig('hash_prime', 997)
 	
 	deduce_decimal *= 100 #to percentage
 	deduce_wrong *= 100 #to percentage
@@ -192,7 +196,7 @@ def settings():
 	max_error = getconfig('max_error', 0.001)
 	time_limit = getconfig('time_limit', 1.0)
 
-	data_form = {'data': data, 'deduce_decimal': deduce_decimal, 'deduce_wrong': deduce_wrong, 'deduce_tle': deduce_tle, 'deduce_runtime': deduce_runtime, 'max_error': max_error, 'time_limit': time_limit, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name, 'script': script, 'run_filename': run_filename}
+	data_form = {'data': data, 'deduce_decimal': deduce_decimal, 'deduce_wrong': deduce_wrong, 'deduce_tle': deduce_tle, 'deduce_runtime': deduce_runtime, 'max_error': max_error, 'time_limit': time_limit, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name, 'script': script, 'run_filename': run_filename, 'hash_prime': hash_prime}
 	return render_template('settings.html', data=data_form)
 
 @app.route('/settings/admin', methods=['POST'])
@@ -207,6 +211,7 @@ def settings_admin():
 		setconfig('admin_public_name', True)
 	else:
 		setconfig('admin_public_name', False)
+	setconfig('hash_prime', int(request.form.get('hash_prime')))
 	return redirect('/settings')
 
 @app.route('/settings/password', methods=['POST'])
@@ -273,19 +278,26 @@ def project(project_name):
 
 		if not 'auth' in session:
 			pjhw = get_all_list_dict()
-			numbers = list(map(lambda x: x[1][-3:], projects))
+			#numbers = list(map(lambda x: x[1][-3:], projects))
+			hash_prime = int(getconfig('hash_prime', 997))
+			numbers = list(map(lambda x: student_hash(x[1], hash_prime), projects))
 			if not 'data_public' in pjhw[project_name]:
 				pjhw[project_name]['data_public'] = False
 			for i in projects:
-				if numbers.count(i[1][-3:]) > 1:
+				if numbers.count(student_hash(i[1], hash_prime)) > 1:
 					i[2] = i[2][0]+'**'
 				else:
 					i[2] = '***'
-				i[1] = '****-**'+i[1][-3:]
+				i[1] = student_hash(i[1], hash_prime)
 			return render_template('project_public.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample, 'data_public': pjhw[project_name]['data_public']})
 		return render_template('project.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name})
 	else:
 		abort(404)
+
+def student_hash(student_id, hash_prime=997):
+	student_id_year = str(student_id[0:4])
+	student_id_num = str(student_id[5:10])
+	return str(int(student_id_year + student_id_num)%hash_prime)
 
 @app.route('/project/add_student/<string:project_name>', methods=['POST'])
 def add_student(project_name):
@@ -692,7 +704,8 @@ def view_result(project_name, id):
 				pass
 			result = c.fetchone()
 			result = json.loads(result[4])['val']
-			result['student_id'] = '****-**' + result['student_id'][-3:]
+			hash_prime = getconfig('hash_prime', 997)
+			result['student_id'] = student_hash(result['student_id'], hash_prime)
 			result['student_name'] = '***'
 			
 			return jsonify(result)
@@ -704,8 +717,9 @@ def view_result(project_name, id):
 			pass
 		result = c.fetchone()
 		result = json.loads(result[4])['val']
+		hash_prime = getconfig('hash_prime', 997)
 		if getconfig('admin_public_id', True) == False:
-			result['student_id'] = '****-**' + result['student_id'][-3:]
+			result['student_id'] = student_hash(result['student_id'], hash_prime)
 		if getconfig('admin_public_name', True) == False:
 			result['student_name'] = '***'
 		return jsonify(result)
@@ -809,7 +823,7 @@ def run_code(project_name):
 			pass
 
 		if code_id != '-1':
-			c.execute('UPDATE {} SET `result`=?, `data`=? WHERE `id`=?;'.format(project_name), (4, data_json, code_id,))
+			c.execute('UPDATE `{}` SET `result`=?, `data`=? WHERE `id`=?;'.format(project_name), (4, data_json, code_id,))
 			conn.commit()
 		if getconfig('admin_public_id', True) == False:
 			data_student['val']['student_id'] = '****-**' + data_student['val']['student_id'][-3:]
