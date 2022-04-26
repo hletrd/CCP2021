@@ -344,33 +344,49 @@ def project_download(project_name):
 		projects = list(map(lambda x: list(x), projects))
 		score_sum = 0
 		project_count = 1e-8
-		result = '#,student_id,student_name,filename,score(total),'
+		if request.args['type'] == '0':
+			result = '#,student_id,hashed_id,student_name,score(total),'
+		else:
+			result = '#,hashed_id,student_name,score(total),'
 
 		c.execute('SELECT * FROM `{}_val`;'.format(project_name))
 		val_set = c.fetchall()
 		score_max = 0
-		for k, i in enumerate(val_set):
-			i_decoded = json.loads(i[3])
-			score_max += i_decoded['score']
-			result += 'case #{},'.format(k)
-		
-		result += '\n'
-		result += '0,(Max score),(Max score),,{},'.format(score_max)
 
 		for k, i in enumerate(val_set):
 			i_decoded = json.loads(i[3])
-			result += '{},'.format(i_decoded['score'])
+			score_max += i_decoded['score']
+			if request.args['type'] == '0':
+				result += 'case #{},'.format(k)
+
+		
 		result += '\n'
+		if request.args['type'] == '0':
+			result += '(Max score),,,,{},'.format(score_max)
+		else:
+			result += '(Max score),,,{},'.format(score_max)
+
+		if request.args['type'] == '0':
+			for k, i in enumerate(val_set):
+				i_decoded = json.loads(i[3])
+				result += '{},'.format(i_decoded['score'])
+		result += '\n'
+
+		hash_prime = getconfig('hash_prime', 997)
 
 		for i in projects:
 			i[4] = json.loads(i[4])
 			if 'val' in i[4]:
 				score_sum += i[4]['val']['score']
 				project_count += 1
-				result += '{},{},{},'.format(i[0], i[1], i[2])
-				result += '{},{},'.format(int(i[4]['log_zip']=='Unzip succeed'), i[4]['val']['score'])
-				for j in i[4]['val']['details']:
-					result += '{},'.format(j['score'])
+				if request.args['type'] == '0':
+					result += '{},{},{},{},'.format(i[0], i[1], student_hash(i[1], hash_prime), i[2])
+				else:
+					result += '{},{},{},'.format(i[0], student_hash(i[1], hash_prime), '***')
+				result += '{},'.format(i[4]['val']['score'])
+				if request.args['type'] == '0':
+					for j in i[4]['val']['details']:
+						result += '{},'.format(j['score'])
 				result += '\n'
 		score_avg = score_sum / project_count
 		
