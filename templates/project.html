@@ -9,8 +9,21 @@
 		background-color: #ca6510;
 		border-color: #ca6510;
 	}
+	.dropdown-download {
+		display: inline-block;
+	}
 </style>
-<a href="/project/upload/{{data.project_name}}" class="btn btn-outline-success"><i class="ri-file-upload-line"></i> eTL 제출물 로드</a> <a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-edit-box-line"></i> 채점 데이터 관리</a> <a href="/project/download/{{data.project_name}}?{{data.data.rand}}" class="btn btn-primary"><i class="ri-file-download-line"></i> 전체 결과 다운로드 (.csv)</a> <a href="/project/download-code/{{data.project_name}}?{{data.data.rand}}" class="btn btn-outline-dark"><i class="ri-file-zip-line"></i> 전체 코드 다운로드 (.zip)</a>
+<a href="/project/upload/{{data.project_name}}" class="btn btn-outline-success"><i class="ri-file-upload-line"></i> eTL 제출물 로드</a> <a href="/project/data/{{data.project_name}}" class="btn btn-secondary"><i class="ri-edit-box-line"></i> 채점 데이터 관리</a>
+<div class="dropdown dropdown-download">
+	<button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+		채점 결과 다운로드 (.csv)
+	</button>
+	<ul class="dropdown-menu">
+		<li><a class="dropdown-item" href="/project/download/{{data.project_name}}?type=0&rand={{data.data.rand}}">전체 결과 (학번 표시, 케이스별 점수 표시)</a></li>
+		<li><a class="dropdown-item" href="/project/download/{{data.project_name}}?type=1&rand={{data.data.rand}}">요약 결과 (학생ID 표시, 케이스별 점수 미표시)</a></li>
+	</ul>
+</div>
+<a href="/project/download-code/{{data.project_name}}?{{data.data.rand}}" class="btn btn-outline-dark"><i class="ri-file-zip-line"></i> 전체 코드 다운로드 (.zip)</a>
 <div class="spacer-15"></div>
 <label>점수 평균: {{data.score_avg|round(2)}}, 만점: {{data.score_max|round(2)}}, 표준편차: {{data.score_std|round(2)}}</label>
 {%include "chart.html"%}
