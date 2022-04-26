@@ -906,80 +906,84 @@ def execute(input_val='', time_limit=1):
 
 	return outs, errs, p.returncode, correct
 
-def validator_real(output, answer, check_num, check_char):
-	if check_num == False and check_char == False:
-		correct = 1 #correct
-	elif check_num == True and check_char == False:
-		#remove except numbers
-		out = re.sub(r'[^0-9.\-]', r' ', output)
-		ref = re.sub(r'[^0-9.\-]', r' ', answer)
-		#remove punctuations without number
-		while True:
-			out, cnt_sub_out = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', out)
-			ref, cnt_sub_ref = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', ref)
-			if cnt_sub_out == 0 and cnt_sub_ref == 0: break
-		out = out.strip('.')
-		ref = ref.strip('.')
-		#remove excessive whitespaces
-		out = re.sub(r'\s+', ' ', out).strip()
-		ref = re.sub(r'\s+', ' ', ref).strip()
+def validator_number(output, answer, max_error):
+	#remove except numbers
+	out = re.sub(r'[^0-9.\-]', r' ', output)
+	ref = re.sub(r'[^0-9.\-]', r' ', answer)
+	#remove punctuations without number
+	while True:
+		out, cnt_sub_out = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', out)
+		ref, cnt_sub_ref = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', ref)
+		if cnt_sub_out == 0 and cnt_sub_ref == 0: break
+	out = out.strip('.')
+	ref = ref.strip('.')
+	#remove excessive whitespaces
+	out = re.sub(r'\s+', ' ', out).strip()
+	ref = re.sub(r'\s+', ' ', ref).strip()
 
-		out = out.split()
-		ref = ref.split()
-		
-		if len(out) != len(ref): #different number of output: wrong!
-			correct = 0
+	out = out.split()
+	ref = ref.split()
+	
+	if len(out) != len(ref): #different number of output: wrong!
+		correct = 0
+	else:
+		state = 1 
+		for k, i in enumerate(out):
+			j = ref[k]
+			if i != j: #first, compare as string
+				state = 0
+				break
+		if state == 1: #if all values are exactly the same
+			correct = 1 #correct
 		else:
-			state = 1 
+			state = 1
 			for k, i in enumerate(out):
 				j = ref[k]
-				if i != j: #first, compare as string
+				i_d = re.sub(r'\.0+', '', i)
+				j_d = re.sub(r'\.0+', '', j)
+				
+				if i_d != j_d: #compare as float
 					state = 0
 					break
-			if state == 1: #if all values are exactly the same
-				correct = 1 #correct
+			if state == 1:
+				correct = 5 #wrong decimal format (1.0 / 1.000 / 1 type)
 			else:
 				state = 1
 				for k, i in enumerate(out):
 					j = ref[k]
-					i_d = re.sub(r'\.0+', '', i)
-					j_d = re.sub(r'\.0+', '', j)
-					
-					if i_d != j_d: #compare as float
+					if '.' in i: #if float format
+						try:
+							i_f = float(i)
+						except:
+							i_f = -1e+20
+					else: #if int format
+						i_f = int(i)
+					if '.' in j:
+						try:
+							j_f = float(j)
+						except:
+							j_f = 1e+20
+					else: #if int format
+						j_f = int(j)
+					if abs(i_f - j_f) > max_error: #compare as float
+						state = 0
+						break
+					i_d = re.sub(r'\.[0-9]+', '', i)
+					j_d = re.sub(r'\.[0-9]+', '', j)
+					if i_d != j_d: #seems the same as float, but not at int (does not considered floating point error)
 						state = 0
 						break
 				if state == 1:
-					correct = 5 #wrong decimal format (1.0 / 1.000 / 1 type)
+					correct = 5 #wrong decimal format (1.0001 / 1.000 type)
 				else:
-					state = 1
-					for k, i in enumerate(out):
-						j = ref[k]
-						if '.' in i: #if float format
-							try:
-								i_f = float(i)
-							except:
-								i_f = -1e+20
-						else: #if int format
-							i_f = int(i)
-						if '.' in j:
-							try:
-								j_f = float(j)
-							except:
-								j_f = 1e+20
-						else: #if int format
-							j_f = int(j)
-						if abs(i_f - j_f) > max_error: #compare as float
-							state = 0
-							break
-						i_d = re.sub(r'\.[0-9]+', '', i)
-						j_d = re.sub(r'\.[0-9]+', '', j)
-						if i_d != j_d: #seems the same as float, but not at int (does not considered floating point error)
-							state = 0
-							break
-					if state == 1:
-						correct = 5 #wrong decimal format (1.0001 / 1.000 type)
-					else:
-						correct = 0 #wrong answer
+					correct = 0 #wrong answer
+	return correct
+
+def validator_real(output, answer, check_num, check_char, max_error):
+	if check_num == False and check_char == False:
+		correct = 1 #correct
+	elif check_num == True and check_char == False:
+		correct = validator_number(output, answer, max_error)
 	elif check_num == False and check_char == True:
 		#remove all numbers
 		out = re.sub(r'-?[0-9.]', r' ', output)
@@ -994,13 +998,27 @@ def validator_real(output, answer, check_num, check_char):
 			correct = 0
 
 	elif check_num == True and check_char == True:
-		#replace whitespaces and lower
-		out = re.sub(r'\s+', ' ', output).strip().lower()
-		ref = re.sub(r'\s+', ' ', answer).strip().lower()
+		#remove all numbers
+		out = re.sub(r'-?[0-9.]', r' ', output)
+		ref = re.sub(r'-?[0-9.]', r' ', answer)
+		#remove excessive whitespaces
+		out = re.sub(r'\s+', ' ', out).strip().lower()
+		ref = re.sub(r'\s+', ' ', ref).strip().lower()
+
 		if out == ref:
+			correct_char = 1
+		else:
+			correct_char = 0
+
+		correct_number = validator_number(output, answer, max_error)
+
+		if correct_number == 1 and correct_char == 1:
 			correct = 1
+		elif correct_char == 1:
+			correct = correct_number
 		else:
 			correct = 0
+
 	return correct
 
 def validator(input_val='', output_val='', check_num=True, check_char=True, max_error=0.001, time_limit=1, is_val_custom=False, do_validation=True):
@@ -1021,7 +1039,7 @@ def validator(input_val='', output_val='', check_num=True, check_char=True, max_
 					importlib.reload(environ.validator_custom)
 					correct, score, score_full, details = environ.validator_custom.validator(outs, output_val)
 				else:
-					correct = validator_real(outs, output_val, check_num, check_char)
+					correct = validator_real(outs, output_val, check_num, check_char, max_error)
 			else:
 				correct = 1
 
