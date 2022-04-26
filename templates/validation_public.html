@@ -1,5 +1,10 @@
 {%include '_header.html'%}
-<a href="/project/{{data.project_name}}" class="btn btn-secondary"><i class="ri-arrow-go-back-line"></i> 전체 결과</a> 
+<a href="/project/{{data.project_name}}" class="btn btn-secondary"><i class="ri-arrow-go-back-line"></i> 전체 결과</a>
+<style>
+textarea {
+	resize: none;
+}
+</style>
 <table class="table table-sm">
 	<thead>
 		<tr>
@@ -14,8 +19,8 @@
 		{%for i in data.val_set%}
 		<tr data-id="{{i[0]}}">
 			<th>{{i[0]}}</th>
-			<td><input class="form-control" type="text" value="{{i[1]}}"></td>
-			<td><input class="form-control" type="text" value="{{i[2]}}"></td>
+			<td><textarea rows="{{i[4]}}" class="form-control">{{i[1] | replace("\\n", "\n")}}</textarea></td>
+			<td><textarea rows="{{i[5]}}" class="form-control">{{i[2] | replace("\\n", "\n")}}</textarea></td>
 			<td>{{i[3].score}}</td>
 			<td>
 				<div class="">

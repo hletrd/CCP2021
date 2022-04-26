@@ -563,6 +563,8 @@ def project_data(project_name):
 			val_set = c.fetchall()
 			val_set = list(map(lambda x: list(x), val_set))
 			for i in val_set:
+				i.append(i[1].count('\n')+1)
+				i.append(i[2].count('\n')+1)
 				i[3] = json.loads(i[3])
 				i[2] = i[2].replace('\n', '\\n')
 				i[1] = i[1].replace('\n', '\\n')
