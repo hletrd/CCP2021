@@ -1,4 +1,4 @@
-## 컴퓨터의 개념 및 실습 (2021-1) grading system
+## 컴퓨터의 개념 및 실습 (~~2021-1~~ ~~2022-1~~ 2023-1) grading system
 
 ### Requirements
 
