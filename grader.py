@@ -417,11 +417,12 @@ def project_download_code(project_name):
 			i[4] = json.loads(i[4])
 			if 'val' in i[4]:
 				code = i[4]['code']
-				path_code = os.path.join(temp_path, i[1]+'_'+i[2]+'.py')
-				with open(path_code, 'w') as f:
-					f.write(code)
-				zipped.write(path_code, i[1]+'_'+i[2]+'.py')
-				os.remove(path_code)
+				#path_code = os.path.join(temp_path, i[1]+'_'+i[2]+'.py')
+				#with open(path_code, 'w') as f:
+				#	f.write(code)
+				#zipped.write(path_code, i[1]+'_'+i[2]+'.py')
+				zipped.writestr(i[1]+'_'+i[2]+'.py', code)
+				#os.remove(path_code)
 		zipped.close()
 		
 		with open(os.path.join(temp_path, 'temp.zip'), 'rb') as f:
