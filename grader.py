@@ -472,14 +472,44 @@ def project_load(project_name):
 		conn.commit()
 		
 		for file in subs:
-			if file.split('.')[-1].lower() != 'zip': continue #ignore if not .zip
+			if file.split('.')[-1].lower() != 'zip': #new etl: not .zip
+				if len(file) >= 3 and file[-3:].lower() == '.py':
+					student_name = file.split('_')[0][:-5]
+					file_id = file.split('_')[0][-5:] + '_' + file.split('_')[1]
+					result = -1
+					data = student_init()
+					with open(os.path.join(path, file), 'r') as f:
+						code = f.read()
+					result = 0
+					target_path = os.path.join(path, student_name + '_' + file_id)
+					#with open(os.path.join(file), 'w') as f:
+					#	f.write(code)
+					result = 1
+					data['log_zip'] = 'file loaded'
+					data['log_zip_detail'] = [file]
+					log_zip_detail_decoded = []
+					for j in data['log_zip_detail']:
+						try:
+							j = j.encode('437')
+						except UnicodeEncodeError:
+							j = j.encode('utf8')
+						try:
+							j = j.decode('utf8')
+						except:
+							j = j.decode('949')
+						log_zip_detail_decoded.append(j)
+					data['log_zip_detail'] = log_zip_detail_decoded
+					data['code'] = code
+					c.execute('INSERT INTO `{}`(`student_id`, `student_name`, `result`, `data`) VALUES (?,?,?,?)'.format(project_name), ('2020-00000', student_name, result, json.dumps(data)))
+					conn.commit()
+					continue
 			if file == 'uploaded.zip': continue #ignore uploaded zip file
 			student_name = file.split('_')[0]
 			student_id = file.split('_')[1]
 			result = -1
 			data = student_init()
 			try:
-				with zipfile.ZipFile(os.path.join(path, file), 'r') as zipf:
+				with zipfile.ZipFile(os.path.join(path, file), 'r') as zipf: #old etl: zip
 					content = zipf.namelist()
 					code = ''
 					result = 0
