@@ -456,7 +456,7 @@ def project_load(project_name):
 		with zipfile.ZipFile(os.path.join(path, 'uploaded.zip'), 'r') as zipf:
 			content = zipf.namelist()
 			for i in content:
-				if i.split('.')[-1].lower() == 'zip':
+				if i.split('.')[-1].lower() == 'zip' or  i.split('.')[-1].lower() == 'py':
 					zipf.extract(i, path)
 
 		subs = os.listdir(path)
