@@ -898,17 +898,22 @@ class PKiller(threading.Thread):
 		threading.Thread.__init__(self)
 		self.timeout = timeout
 		self.process = process
+		self.disabled = False
 	
 	def run(self):
 		time.sleep(self.timeout)
-		try:
-			self.process.kill()
-		except:
-			pass
+		if self.disabled == False:
+			print('kill')
+			try:
+				self.process.terminate()
+				self.process.kill()
+			except Exception as e:
+				print('not killed')
+				pass
 
 
 def execute(input_val='', time_limit=1):
-	p = subprocess.Popen([getconfig('script', 'python3')+' '+getconfig('run_filename', 'main.py')], cwd=run_path, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+	p = subprocess.Popen([getconfig('script', 'python3'), getconfig('run_filename', 'main.py')], cwd=run_path, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=False)
 	input_lines = input_val.split('\n')
 
 	for i in input_lines:
@@ -923,7 +928,9 @@ def execute(input_val='', time_limit=1):
 
 	try:
 		outs, errs = p.communicate(timeout=time_limit)
-	except subprocess.TimeoutExpired:
+		pk.disabled = True
+	except subprocess.TimeoutExpired: #time limit exceed
+		p.terminate()
 		p.kill()
 		#outs, errs = p.communicate()'
 		outs, errs = b'', b''
