@@ -81,7 +81,7 @@
 	<thead>
 		<tr>
 			<th scope="col">#</th>
-			<th scope="col">학번</th>
+			<th scope="col">{%if data.admin_public_id%}학번{%else%}학생ID{%endif%}</th>
 			<th scope="col">이름</th>
 			<th scope="col">제출 파일</th>
 			<th scope="col">점수</th>
