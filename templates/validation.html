@@ -81,25 +81,31 @@
 <div class="spacer-15"></div>
 <button type="button" class="btn btn-info" onclick="answer()"><i class="ri-mark-pen-fill"></i> 정답 만들기</button>
 <script src="/static/ace/ace.js"></script>
+<script src="/static/ace/ext-language_tools.js"></script>
 <script>
 var count = {{data.val_set | length}};
 var editor = ace.edit("code-editor");
 var validator = ace.edit("editor-validator");
 $(document).ready(function(){
-	editor.setTheme("ace/theme/monokai");
+	editor.setTheme("ace/theme/dracula");
 	editor.session.setMode("ace/mode/python");
 	editor.session.setUseWrapMode(true);
 	editor.setAutoScrollEditorIntoView(true);
 	editor.setOption('maxLines', 100);
 	editor.setOption('minLines', 20);
+	editor.setOption('enableBasicAutocompletion', true);
+	editor.setOption('enableLiveAutocompletion', true);
+	editor.setOption('wrapBehavioursEnabled', true);
 	editor.renderer.setScrollMargin(10, 0, 0, 10);
 
-	validator.setTheme("ace/theme/monokai");
+	validator.setTheme("ace/theme/dracula");
 	validator.session.setMode("ace/mode/python");
 	validator.session.setUseWrapMode(true);
 	validator.setAutoScrollEditorIntoView(true);
 	validator.setOption('maxLines', 100);
 	validator.setOption('minLines', 20);
+	validator.setOption('enableBasicAutocompletion', true);
+	validator.setOption('enableLiveAutocompletion', true);
 	validator.renderer.setScrollMargin(10, 0, 0, 10);
 });
 function setcode() {

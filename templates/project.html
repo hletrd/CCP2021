@@ -146,12 +146,15 @@
 var id_selected = -1;
 var editor = ace.edit("code-preview");
 $(document).ready(function(){
-	editor.setTheme("ace/theme/monokai");
+	editor.setTheme("ace/theme/dracula");
 	editor.session.setMode("ace/mode/python");
 	editor.session.setUseWrapMode(true);
 	editor.setAutoScrollEditorIntoView(true);
 	editor.setOption('maxLines', 100);
 	editor.setOption('minLines', 10);
+	editor.setOption('enableBasicAutocompletion', true);
+	editor.setOption('enableLiveAutocompletion', true);
+	editor.setOption('wrapBehavioursEnabled', true);
 	editor.renderer.setScrollMargin(10, 0, 0, 10);
 });
 
