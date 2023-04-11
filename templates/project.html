@@ -96,11 +96,15 @@
 			<td>{%if data.admin_public_id%}{{i[1]}}{%else%}{{(i[1]|replace('-','')|int) % data.hash_prime}}{%endif%}</td>
 			<td>{%if data.admin_public_name%}{{i[2]}}{%else%}***{%endif%}</td>
 			<td>{#{{i[4].log_zip}}#}
-				{%if i[3] != 1%}
-				{#/#}
-				{{(i[4].log_zip_detail|join(', '))[:10]}}{%if i[4].log_zip_detail|join(', ')|length > 10%}...{%endif%}
+				{%if data.admin_public_filename == True%}
+					{%if i[3] != 1%}
+					{#/#}
+					{{(i[4].log_zip_detail|join(', '))[:10]}}{%if i[4].log_zip_detail|join(', ')|length > 10%}...{%endif%}
+					{%else%}
+					...
+					{%endif%}
 				{%else%}
-				main.py
+					...
 				{%endif%}
 			</td>
 			<td>{{i[4].val.score}}</td>

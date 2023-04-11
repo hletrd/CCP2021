@@ -89,6 +89,15 @@
 				</div>
 				<div class="spacer-15"></div>
 				<div class="row">
+					<div class="col-sm-4"><label class="form-check-label" for="check-public-filename">관리자 화면에 파일명 표시</label></div>
+					<div class="col-sm-8">
+						<div class="form-check form-switch">
+							<input class="form-check-input" type="checkbox" name="check-public-filename" id="check-public-filename"{%if data.admin_public_filename%} checked{%endif%}>
+						</div>
+					</div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
 					<div class="col-sm-4"><label>학생ID 계산용 값</label></div>
 					<div class="col-sm-8"><input class="form-control" name="hash_prime" type="text" value="{{data.hash_prime}}"></div>
 				</div>

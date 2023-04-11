@@ -181,6 +181,7 @@ def settings():
 
 	admin_public_id = getconfig('admin_public_id', True)
 	admin_public_name = getconfig('admin_public_name', True)
+	admin_public_filename = getconfig('admin_public_filename', True)
 
 	script = getconfig('script', 'python3')
 	run_filename = getconfig('run_filename', 'main.py')
@@ -207,14 +208,22 @@ def settings():
 def settings_admin():
 	if not 'auth' in session:
 		abort(404)
+
 	if request.form.get('check-public-id') != None:
 		setconfig('admin_public_id', True)
 	else:
 		setconfig('admin_public_id', False)
+
 	if request.form.get('check-public-name') != None:
 		setconfig('admin_public_name', True)
 	else:
 		setconfig('admin_public_name', False)
+
+	if request.form.get('check-public-filename') != None:
+		setconfig('admin_public_filename', True)
+	else:
+		setconfig('admin_public_filename', False)
+
 	setconfig('hash_prime', int(request.form.get('hash_prime')))
 	return redirect('/settings')
 
@@ -293,11 +302,12 @@ def project(project_name):
 				sample = f.read()
 		admin_public_id = getconfig('admin_public_id')
 		admin_public_name = getconfig('admin_public_name')
+		admin_public_filename = getconfig('admin_public_filename')
+		hash_prime = int(getconfig('hash_prime', 997))
 
 		if not 'auth' in session:
 			pjhw = get_all_list_dict()
 			#numbers = list(map(lambda x: x[1][-3:], projects))
-			hash_prime = int(getconfig('hash_prime', 997))
 			numbers = list(map(lambda x: student_hash(x[1], hash_prime), projects))
 			if not 'data_public' in pjhw[project_name]:
 				pjhw[project_name]['data_public'] = False
@@ -308,7 +318,7 @@ def project(project_name):
 					i[2] = '***'
 				i[1] = student_hash(i[1], hash_prime)
 			return render_template('project_public.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample, 'data_public': pjhw[project_name]['data_public']})
-		return render_template('project.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name})
+		return render_template('project.html', data={'data': prepare_data(), 'project_name': project_name, 'projects': projects, 'score_avg': score_avg, 'score_max': score_max, 'score_std': score_std, 'sample': sample, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name, 'admin_public_filename': admin_public_filename, 'hash_prime': hash_prime})
 	else:
 		abort(404)
 
@@ -510,8 +520,9 @@ def project_load(project_name):
 					#with open(os.path.join(file), 'w') as f:
 					#	f.write(code)
 					result = 1
+					filename = '_'.join(file.split('_')[3:])
 					data['log_zip'] = 'file loaded'
-					data['log_zip_detail'] = [file]
+					data['log_zip_detail'] = [filename]
 					log_zip_detail_decoded = []
 					for j in data['log_zip_detail']:
 						try:
@@ -678,6 +689,7 @@ def init_db():
 
 		setconfig('admin_public_id', True)
 		setconfig('admin_public_name', True)
+		setconfig('admin_public_filename', True)
 
 		setconfig('script', 'python3')
 		setconfig('run_filename', 'main.py')
@@ -809,6 +821,7 @@ def view_result(project_name, id):
 			result['student_id'] = student_hash(result['student_id'], hash_prime)
 		if getconfig('admin_public_name', True) == False:
 			result['student_name'] = '***'
+		
 		return jsonify(result)
 
 @app.route('/project/run/<string:project_name>', methods=['POST'])
