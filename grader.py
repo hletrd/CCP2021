@@ -194,8 +194,13 @@ def settings():
 
 	max_error = getconfig('max_error', 0.001)
 	time_limit = getconfig('time_limit', 1.0)
+	students = getconfig('student_list', {})
+	students_text = ''
+	for k,v in students.items():
+		students_text += k + ',' + v + '\n'
+	student_list = students_text
 
-	data_form = {'data': data, 'deduce_decimal': deduce_decimal, 'deduce_wrong': deduce_wrong, 'deduce_tle': deduce_tle, 'deduce_runtime': deduce_runtime, 'max_error': max_error, 'time_limit': time_limit, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name, 'script': script, 'run_filename': run_filename, 'hash_prime': hash_prime}
+	data_form = {'data': data, 'deduce_decimal': deduce_decimal, 'deduce_wrong': deduce_wrong, 'deduce_tle': deduce_tle, 'deduce_runtime': deduce_runtime, 'max_error': max_error, 'time_limit': time_limit, 'admin_public_id': admin_public_id, 'admin_public_name': admin_public_name, 'admin_public_filename': admin_public_filename, 'script': script, 'run_filename': run_filename, 'hash_prime': hash_prime, 'student_list': student_list}
 	return render_template('settings.html', data=data_form)
 
 @app.route('/settings/admin', methods=['POST'])
@@ -223,6 +228,20 @@ def settings_password():
 		setconfig('password', password)
 		return redirect('/settings')
 	abort(418)
+
+@app.route('/settings/student', methods=['POST'])
+def settings_student():
+	if not 'auth' in session:
+		abort(404)
+	if request.form.get('student_list') != None:
+		students = request.form.get('student_list').split('\n')
+		students_dict = {}
+		for student in students:
+			if student != '':
+				student = student.split(',')
+				students_dict[student[0].strip()] = student[1].strip()
+		setconfig('student_list', students_dict)
+	return redirect('/settings')
 
 @app.route('/logout')
 def logout():
@@ -472,11 +491,16 @@ def project_load(project_name):
 			pass
 		conn.commit()
 		
+		students = getconfig('student_list', {})
 		for file in subs:
 			if file.split('.')[-1].lower() != 'zip': #new etl: not .zip
 				if len(file) >= 3 and file[-3:].lower() == '.py':
 					student_name = file.split('_')[0][:-5]
 					file_id = file.split('_')[0][-5:] + '_' + file.split('_')[1]
+					if student_name in students:
+						student_id = students[student_name]
+					else:
+						student_id = file_id
 					result = -1
 					data = student_init()
 					with open(os.path.join(path, file), 'r') as f:
@@ -501,7 +525,7 @@ def project_load(project_name):
 						log_zip_detail_decoded.append(j)
 					data['log_zip_detail'] = log_zip_detail_decoded
 					data['code'] = code
-					c.execute('INSERT INTO `{}`(`student_id`, `student_name`, `result`, `data`) VALUES (?,?,?,?)'.format(project_name), ('2020-00000', student_name, result, json.dumps(data)))
+					c.execute('INSERT INTO `{}`(`student_id`, `student_name`, `result`, `data`) VALUES (?,?,?,?)'.format(project_name), (student_id, student_name, result, json.dumps(data)))
 					conn.commit()
 					continue
 			if file == 'uploaded.zip': continue #ignore uploaded zip file
@@ -657,6 +681,8 @@ def init_db():
 
 		setconfig('script', 'python3')
 		setconfig('run_filename', 'main.py')
+
+		setconfig('student_list', {})
 
 		setconfig('max_error', 0.001)
 		setconfig('time_limit', 1.0)

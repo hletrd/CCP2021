@@ -123,6 +123,25 @@
 			</div>
 		</div>
 	</form>
+	<hr>
+	<form class="jumbotron" method="post" action="/settings/student" enctype="multipart/form-data">
+		<div class="row justify-content-sm-center">
+			<div class="col-sm-6">
+				<div class="row">
+					<div class="col-sm-4"><label>학생 목록</label></div>
+					<div class="col-sm-8"><textarea class="form-control" rows="20" name="student_list">{{data.student_list}}</textarea></div>
+				</div>
+				<div class="row">
+					<div class="col-sm-4"></div><div class="col-sm-8"><div class="form-text">new eTL에서 일괄 다운로드한 과제물에는 학번 정보가 없기 때문에 이름-학번 매핑에 사용합니다. 한 줄에 한 명씩 콤마로 구분하여 "이름,학번"과 같이 입력하세요.</div></div>
+				</div>
+				<div class="spacer-15"></div>
+				<div class="row">
+					<div class="col-sm-4"></div>
+					<div class="col-sm-8 d-grid"><button type="submit" class="btn btn-warning">학생 목록 등록</button></div>
+				</div>
+			</div>
+		</div>
+	</form>
 </div>
 
 {%include '_footer.html'%}
