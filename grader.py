@@ -482,6 +482,8 @@ def project_load(project_name):
 		path = os.path.join(input_path, project_name)
 		if not os.path.exists(path):
 			os.mkdir(path)
+		for f in os.listdir(path):
+			os.remove(os.path.join(path, f))
 		file.save(os.path.join(path, 'uploaded.zip'))
 		with zipfile.ZipFile(os.path.join(path, 'uploaded.zip'), 'r') as zipf:
 			content = zipf.namelist()
