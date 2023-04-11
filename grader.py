@@ -942,7 +942,6 @@ class PKiller(threading.Thread):
 	def run(self):
 		time.sleep(self.timeout)
 		if self.disabled == False:
-			print('kill')
 			try:
 				self.process.terminate()
 				self.process.kill()
