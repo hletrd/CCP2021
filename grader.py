@@ -863,7 +863,7 @@ def run_code(project_name):
 			os.mkdir(run_path)
 		with open(os.path.join(run_path, getconfig('run_filename', 'main.py')), 'w') as f:
 			f.write(code)
-		time.sleep(1)
+		time.sleep(0.5)
 		
 		c.execute('SELECT * FROM `{}_val`;'.format(project_name))
 		val_set = c.fetchall()
@@ -911,7 +911,7 @@ def run_code(project_name):
 				
 				data_student['val']['score_total'] += i[3]['score']
 			data_student['val']['details'].append(result)
-			time.sleep(0.05)
+			time.sleep(0.01)
 
 		data_student['val']['score_total'] = round(data_student['val']['score_total'], 3)
 		data_student['val']['score'] = round(data_student['val']['score'], 3)
@@ -966,15 +966,21 @@ def execute(input_val='', time_limit=1):
 	pk = PKiller(time_limit+0.5, p)
 	pk.start()
 
+	start = time.time()
+
 	try:
 		outs, errs = p.communicate(timeout=time_limit)
 		pk.disabled = True
+		end = time.time()
+		elapsed = int((end - start)*1000000)/1000
 	except subprocess.TimeoutExpired: #time limit exceed
 		p.terminate()
 		p.kill()
 		#outs, errs = p.communicate()'
 		outs, errs = b'', b''
 		correct = 3 #TLE
+		elapsed = -1
+	
 
 	outs = outs.decode()
 	if errs != None:
@@ -984,7 +990,7 @@ def execute(input_val='', time_limit=1):
 	cwdpath = os.path.abspath(os.path.join(os.getcwd(), run_path))
 	errs = errs.replace(cwdpath, '.')
 
-	return outs, errs, p.returncode, correct
+	return outs, errs, p.returncode, correct, elapsed
 
 def validator_number(output, answer, max_error):
 	#remove except numbers
@@ -1102,7 +1108,7 @@ def validator_real(output, answer, check_num, check_char, max_error):
 	return correct
 
 def validator(input_val='', output_val='', check_num=True, check_char=True, max_error=0.001, time_limit=1, is_val_custom=False, do_validation=True):
-	outs, errs, returncode, correct = execute(input_val, time_limit)
+	outs, errs, returncode, correct, elapsed = execute(input_val, time_limit)
 	score_full = 0
 	score = 0
 	details = ''
@@ -1133,6 +1139,7 @@ def validator(input_val='', output_val='', check_num=True, check_char=True, max_
 		'score': score,
 		'score_full': score_full,
 		'details': details,
+		'elapsed': elapsed,
 	}
 	return result
 

@@ -2,65 +2,75 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 	.error {
-		color: #c62828;
+		color: #ef596f;
 		font-weight: 700;
 	}
 	.tle {
-		color: #ad1457;
+		color: #f44747;
 		font-weight: 700;
 	}
 	.wrong-answer {
-		color: #d84315;
+		color: #f44747;
 		font-weight: 700;
 	}
 	.score-zero {
-		color: #ef6c00;
+		color: #ef596f;
 		font-weight: 500;
 	}
 	.wrong-format {
-		color: #ff8f00;
+		color: #fc9867;
 		font-weight: 600;
 	}
 	.message-wrong-format {
-		color: #ff6f00;
+		color: #fc9867;
 		font-weight: 700;
 	}
 	.message-wrong-answer {
-		color: #bf360c;
+		color: #f44747;
 		font-weight: 700;
 	}
 	.bg-wrong-answer {
-		background-color: #bf360c;
+		background-color: #ef596f;
 	}
 	.bg-wrong-format {
-		background-color: #ff6f00;
+		background-color: #fc9867;
 	}
 	.message-error {
-		color: #b71c1c;
+		color: #ef596f;
 		font-weight: 700;
 	}
+	.bg-correct {
+		background-color: #5cac48;
+	}
 	.correct {
-		color: #2e7d32;
+		color: #3399ed;
 		font-weight: 700;
 	}
 	.score-full {
-		color: #0277bd;
+		color: #2196f3;
 		font-weight: 500;
 	}
 	.answer {
-		color: #558b2f;
+		color: #5cac48;
 		font-weight: 700;
 	}
 	.input {
-		color: #4527a0;
+		color: #61afef;
 		font-weight: 700;
 	}
+	.bg-input {
+		background-color: #61afef;
+	}
 	.number {
-		color: #9e9d24;
-		font-weight: 500;
+		color: #5c6370;
+		font-weight: 700;
 	}
 	.score-partial {
-		color: #9e9d24;
+		color: #89ca78;
+		font-weight: 500;
+	}
+	.elapsed {
+		color: #c678dd;
 		font-weight: 500;
 	}
 	#chart {
@@ -119,9 +129,11 @@ function render(data) {
 		if (data.details[i].correct == 1) {
 			$('<span>').addClass('correct').html('Correct! ').appendTo(result);
 			$('<span>').addClass('score-full').html('Score '+data.details[i].score).appendTo(result);
+			$('<span>').addClass('elapsed').html(' Time '+parseInt(data.details[i].elapsed)+'ms').appendTo(result);
 		} else if (data.details[i].correct == 2 || data.details[i].correct == 6) {
 			$('<span>').addClass('message-wrong-format').html('Wrong format! ').appendTo(result);
 			$('<span>').addClass('score-partial').html('Score '+data.details[i].score).appendTo(result);
+			$('<span>').addClass('elapsed').html(' Time '+parseInt(data.details[i].elapsed)+'ms').appendTo(result);
 			
 			var result_detailed = $('<p>').addClass('result-detailed');
 			result_detailed.append($('<span>').addClass('badge bg-wrong-format').html('Your output'));
@@ -148,6 +160,7 @@ function render(data) {
 		} else if (data.details[i].correct == 5) {
 			$('<span>').addClass('message-wrong-format').html('Wrong decimal format! ').appendTo(result);
 			$('<span>').addClass('score-partial').html('Score '+data.details[i].score).appendTo(result);
+			$('<span>').addClass('elapsed').html(' Time '+parseInt(data.details[i].elapsed)+'ms').appendTo(result);
 
 			var result_detailed = $('<p>').addClass('result-detailed');
 			result_detailed.append($('<span>').addClass('badge bg-wrong-format').html('Your output'));
@@ -165,6 +178,7 @@ function render(data) {
 		} else if (data.details[i].correct == 6) {
 			$('<span>').addClass('message-wrong-format').html('Excess outputs! ').appendTo(result);
 			$('<span>').addClass('score-partial').html('Score '+data.details[i].score).appendTo(result);
+			$('<span>').addClass('elapsed').html(' Time '+parseInt(data.details[i].elapsed)+'ms').appendTo(result);
 
 			var result_detailed = $('<p>').addClass('result-detailed');
 			result_detailed.append($('<span>').addClass('badge bg-wrong-format').html('Your output'));
@@ -182,6 +196,7 @@ function render(data) {
 		} else if (data.details[i].result != 0) {
 			$('<span>').addClass('message-error').html('Runtime error! ').appendTo(result);
 			$('<span>').addClass('score-zero').html('Score '+data.details[i].score).appendTo(result);
+			$('<span>').addClass('elapsed').html(' Time '+parseInt(data.details[i].elapsed)+'ms').appendTo(result);
 
 			var result_detailed = $('<p>').addClass('result-detailed');
 			result_detailed.append($('<span>').addClass('badge bg-danger').html('Error'));
