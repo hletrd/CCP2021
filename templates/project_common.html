@@ -140,11 +140,11 @@ function render(data) {
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('wrong-format').html(output))
 			result_detailed.append('<br/>');
-			result_detailed.append($('<span>').addClass('badge bg-success').html('Correct output'));
+			result_detailed.append($('<span>').addClass('badge bg-correct').html('Correct output'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('answer').html(answer));
 			result_detailed.append('<br/>');
-			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append($('<span>').addClass('badge bg-input').html('Input'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('input').html(input))	
 			result_detailed.appendTo(result);
@@ -153,7 +153,7 @@ function render(data) {
 			$('<span>').addClass('score-zero').html('Score '+data.details[i].score).appendTo(result);
 
 			var result_detailed = $('<p>').addClass('result-detailed');
-			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append($('<span>').addClass('badge bg-input').html('Input'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('input').html(input))	
 			result_detailed.appendTo(result);
@@ -167,11 +167,11 @@ function render(data) {
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('wrong-format').html(output))
 			result_detailed.append('<br/>');
-			result_detailed.append($('<span>').addClass('badge bg-success').html('Correct output'));
+			result_detailed.append($('<span>').addClass('badge bg-correct').html('Correct output'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('answer').html(answer));
 			result_detailed.append('<br/>');
-			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append($('<span>').addClass('badge bg-input').html('Input'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('input').html(input))	
 			result_detailed.appendTo(result);
@@ -185,11 +185,11 @@ function render(data) {
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('wrong-format').html(output))
 			result_detailed.append('<br/>');
-			result_detailed.append($('<span>').addClass('badge bg-success').html('Correct output'));
+			result_detailed.append($('<span>').addClass('badge bg-correct').html('Correct output'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('answer').html(answer));
 			result_detailed.append('<br/>');
-			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append($('<span>').addClass('badge bg-input').html('Input'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('input').html(input))	
 			result_detailed.appendTo(result);
@@ -199,34 +199,35 @@ function render(data) {
 			$('<span>').addClass('elapsed').html(' Time '+parseInt(data.details[i].elapsed)+'ms').appendTo(result);
 
 			var result_detailed = $('<p>').addClass('result-detailed');
-			result_detailed.append($('<span>').addClass('badge bg-danger').html('Error'));
+			result_detailed.append($('<span>').addClass('badge bg-wrong-answer').html('Error'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('error').html(data.details[i].error))
-			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append($('<span>').addClass('badge bg-input').html('Input'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('input').html(input))	
 			result_detailed.appendTo(result);
 		} else {
 			$('<span>').addClass('message-wrong-answer').html('Wrong answer! ').appendTo(result);
 			$('<span>').addClass('score-zero').html('Score '+data.details[i].score).appendTo(result);
+			$('<span>').addClass('elapsed').html(' Time '+parseInt(data.details[i].elapsed)+'ms').appendTo(result);
 
 			var result_detailed = $('<p>').addClass('result-detailed');
 			result_detailed.append($('<span>').addClass('badge bg-wrong-answer').html('Your output'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('wrong-answer').html(output))
 			result_detailed.append('<br/>');
-			result_detailed.append($('<span>').addClass('badge bg-success').html('Correct output'));
+			result_detailed.append($('<span>').addClass('badge bg-correct').html('Correct output'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('answer').html(answer));
 			result_detailed.append('<br/>');
-			result_detailed.append($('<span>').addClass('badge bg-info').html('Input'));
+			result_detailed.append($('<span>').addClass('badge bg-input').html('Input'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('input').html(input))	
 			result_detailed.appendTo(result);
 		}
 		if (data.details[i].details) {
 			var result_detailed = $('<p>').addClass('result-detailed');
-			result_detailed.append($('<span>').addClass('badge bg-success').html('Details'));
+			result_detailed.append($('<span>').addClass('badge bg-correct').html('Details'));
 			result_detailed.append('<br/>');
 			result_detailed.append($('<span>').addClass('answer').html(data.details[i].details));
 			result_detailed.appendTo(result);
