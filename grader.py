@@ -406,7 +406,7 @@ def project_download(project_name):
 		for i in projects:
 			i[4] = json.loads(i[4])
 			if 'val' in i[4]:
-				score_sum += i[4]['val']['score']
+				score_sum += i[4]['val']['score'] #will calculate in floating point, therefore may show fp error. (not a big issue)
 				project_count += 1
 				if request.args['type'] == '0':
 					result += '{},{},{},{},'.format(i[0], i[1], student_hash(i[1], hash_prime), i[2])
@@ -1051,7 +1051,7 @@ def validator_number(output, answer, max_error):
 							j_f = 1e+20
 					else: #if int format
 						j_f = int(j)
-					if abs(i_f - j_f) > max_error: #compare as float
+					if abs(i_f - j_f) > max_error: #compare as float. it may ignore floating point error. (consider using numpy.longdouble if precise grading is required.)
 						state = 0
 						break
 					i_d = re.sub(r'\.[0-9]+', '', i)
