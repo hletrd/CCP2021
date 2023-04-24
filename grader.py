@@ -994,13 +994,15 @@ def execute(input_val='', time_limit=1):
 
 def validator_number(output, answer, max_error):
 	#remove except numbers
-	out = re.sub(r'[^0-9.\-]', r' ', output)
-	ref = re.sub(r'[^0-9.\-]', r' ', answer)
+	out = re.sub(r'[^0-9.\-+e]', r' ', output)
+	ref = re.sub(r'[^0-9.\-+e]', r' ', answer)
 	#remove punctuations without number
 	while True:
 		out, cnt_sub_out = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', out)
 		ref, cnt_sub_ref = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', ref)
-		if cnt_sub_out == 0 and cnt_sub_ref == 0: break
+		out, cnt_sub_out0 = re.subn(r'([^0-9])(e[^+-])', r' ', out)
+		ref, cnt_sub_ref0 = re.subn(r'([^0-9])(e[^+-])', r' ', ref)
+		if cnt_sub_out == 0 and cnt_sub_ref == 0 and cnt_sub_out0 and cnt_sub_ref0: break
 	out = out.strip('.')
 	ref = ref.strip('.')
 	#remove excessive whitespaces
@@ -1025,8 +1027,8 @@ def validator_number(output, answer, max_error):
 			state = 1
 			for k, i in enumerate(out):
 				j = ref[k]
-				i_d = re.sub(r'\.0+', '', i)
-				j_d = re.sub(r'\.0+', '', j)
+				i_d = re.sub(r'\.0+$', '', i)
+				j_d = re.sub(r'\.0+$', '', j)
 				
 				if i_d != j_d: #compare as float
 					state = 0
@@ -1054,10 +1056,12 @@ def validator_number(output, answer, max_error):
 					if abs(i_f - j_f) > max_error: #compare as float. it may ignore floating point error. (consider using numpy.longdouble if precise grading is required.)
 						state = 0
 						break
-					i_d = re.sub(r'\.[0-9]+', '', i)
-					j_d = re.sub(r'\.[0-9]+', '', j)
-					if i_d != j_d: #seems the same as float, but not at int (does not considered floating point error)
-						state = 0
+					i_d = re.sub(r'\.[0-9e+]+', '', i)
+					j_d = re.sub(r'\.[0-9e+]+', '', j)
+					if i_d != j_d: #seems the same as float, but not at int (does not considered floating point error) # (0.999 / 1.000 type)
+					#	state = 0 
+						state = 1
+						correct = 5
 						break
 				if state == 1:
 					correct = 5 #wrong decimal format (1.0001 / 1.000 type)
