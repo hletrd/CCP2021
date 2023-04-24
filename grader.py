@@ -1058,11 +1058,44 @@ def validator_number(output, answer, max_error):
 						break
 					i_d = re.sub(r'\.[0-9e+]+', '', i)
 					j_d = re.sub(r'\.[0-9e+]+', '', j)
+					
+					if '.' in i:
+						i_fraction = re.sub(r'-?[0-9]+\.', '', i)
+					else:
+						i_fraction = '0'
+					if '.' in j:
+						j_fraction = re.sub(r'-?[0-9]+\.', '', j)
+					else:
+						j_fraction = '0'
+
+					i_exponent = 0
+					j_exponent = 0
+					if 'e' in i_fraction:
+						i_fraction = re.sub(r'e[+-][0-9]+', '', i_fraction)
+						i_exponent = int(re.sub(r'[0-9.]+e[+]', '', i))
+					if 'e' in j_fraction:
+						j_fraction = re.sub(r'e[+-][0-9]+', '', i_fraction)
+						j_exponent = int(re.sub(r'[0-9.]+e[+]', '', j))
+					i_fraction = '0.' + i_fraction
+					i_fraction = float(i_fraction)
+					j_fraction = '0.' + j_fraction
+					j_fraction = float(j_fraction)
+
+					i_d_amp = int(i_d) * (10**10)
+					j_d_amp = int(j_d) * (10**10)
+					i_d_amp += int(i_fraction * (10**i_exponent) * (10**10))
+					j_d_amp += int(j_fraction * (10**j_exponent) * (10**10))
+					max_error_amp = int(max_error * (10**10))
+
 					if i_d != j_d: #seems the same as float, but not at int (does not considered floating point error) # (0.999 / 1.000 type)
 					#	state = 0 
-						state = 1
-						correct = 5
-						break
+						if abs(i_d_amp - j_d_amp) <= max_error_amp:
+							state = 1
+							correct = 5
+							break
+						else:
+							state = 0
+							break
 				if state == 1:
 					correct = 5 #wrong decimal format (1.0001 / 1.000 type)
 				else:
