@@ -911,7 +911,7 @@ def run_code(project_name):
 				
 				data_student['val']['score_total'] += i[3]['score']
 			data_student['val']['details'].append(result)
-			time.sleep(0.01)
+			time.sleep(0.001)
 
 		data_student['val']['score_total'] = round(data_student['val']['score_total'], 3)
 		data_student['val']['score'] = round(data_student['val']['score'], 3)
@@ -1088,7 +1088,6 @@ def validator_number(output, answer, max_error):
 					max_error_amp = int(max_error * (10**10))
 
 					if i_d != j_d: #seems the same as float, but not at int (does not considered floating point error) # (0.999 / 1.000 type)
-					#	state = 0 
 						if abs(i_d_amp - j_d_amp) <= max_error_amp:
 							state = 1
 							correct = 5
