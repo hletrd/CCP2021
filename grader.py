@@ -1002,7 +1002,7 @@ def validator_number(output, answer, max_error):
 		ref, cnt_sub_ref = re.subn(r'([^0-9])[.\-]([^0-9])', r'\1 \2', ref)
 		out, cnt_sub_out0 = re.subn(r'([^0-9])(e[^+-])', r' ', out)
 		ref, cnt_sub_ref0 = re.subn(r'([^0-9])(e[^+-])', r' ', ref)
-		if cnt_sub_out == 0 and cnt_sub_ref == 0 and cnt_sub_out0 and cnt_sub_ref0: break
+		if cnt_sub_out == 0 and cnt_sub_ref == 0 and cnt_sub_out0 == 0 and cnt_sub_ref0 == 0: break
 	out = out.strip('.')
 	ref = ref.strip('.')
 	#remove excessive whitespaces
